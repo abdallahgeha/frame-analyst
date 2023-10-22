@@ -34,4 +34,6 @@ export default function snapToCap(
       snapY = cap.capEndY;
     }
   });
+
+  return { capSnapX: snapX, capSnapY: snapY };
 }

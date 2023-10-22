@@ -1,4 +1,5 @@
 import { Layer, Line } from "react-konva";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "~/constants";
 
 const GridLayer = ({
   gridSize,
@@ -10,8 +11,8 @@ const GridLayer = ({
   if (!isGridOn) return null;
 
   // Calculate the number of grid squares required based on the canvas size
-  const numVerticalLines = Math.ceil(800 / gridSize); // Adjust 800 to match your canvas width
-  const numHorizontalLines = Math.ceil(600 / gridSize); // Adjust 800 to match your canvas height
+  const numVerticalLines = Math.ceil(CANVAS_WIDTH / gridSize); 
+  const numHorizontalLines = Math.ceil(CANVAS_HEIGHT / gridSize);
 
   // Create an array to store the grid line components
   const verticalLines = [];
@@ -22,7 +23,7 @@ const GridLayer = ({
     verticalLines.push(
       <Line
         key={`vertical_${i}`}
-        points={[i * gridSize, 0, i * gridSize, 600]} // Adjust 800 to match your canvas height
+        points={[i * gridSize, 0, i * gridSize, CANVAS_HEIGHT]} 
         stroke="gray"
         strokeWidth={1}
         opacity={0.5}
@@ -35,7 +36,7 @@ const GridLayer = ({
     horizontalLines.push(
       <Line
         key={`horizontal_${i}`}
-        points={[0, i * gridSize, 800, i * gridSize]} // Adjust 800 to match your canvas width
+        points={[0, i * gridSize, CANVAS_WIDTH, i * gridSize]} 
         stroke="gray"
         strokeWidth={1}
       />,
@@ -46,6 +47,26 @@ const GridLayer = ({
     <Layer>
       {verticalLines}
       {horizontalLines}
+      <Line
+        points={[
+          2 * gridSize,
+          600 - 2 * gridSize,
+          2 * gridSize,
+          600 - 5 * gridSize,
+        ]}
+        stroke="red"
+        strokeWidth={3}
+      />
+      <Line
+        points={[
+          2 * gridSize,
+          600 - 2 * gridSize,
+          2 * gridSize + 3 * gridSize,
+          600 - 2 * gridSize,
+        ]}
+        stroke="green"
+        strokeWidth={3}
+      />
     </Layer>
   );
 };

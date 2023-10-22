@@ -10,6 +10,7 @@ import {
 import { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
 import { LineType } from "~/types/shapes.types";
 import snapToCap from "~/utils/snapToCap";
+import snapToGrid from "~/utils/snapToGrid";
 
 const CappedLine = ({
   line,
@@ -29,22 +30,28 @@ const CappedLine = ({
     let snapY = y;
 
     if (GRID_SNAP) {
-      snapX = Math.round(x / GRID_SIZE) * GRID_SIZE;
-      snapY = Math.round(y / GRID_SIZE) * GRID_SIZE;
-
-      const deltaX = x - snapX;
-      const deltaY = y - snapY;
-      if (
-        Math.abs(deltaX) > GRID_SNAP_THRESHOLD &&
-        Math.abs(deltaY) > GRID_SNAP_THRESHOLD
-      ) {
-        snapX = x;
-        snapY = y;
-      }
+      const { gripSnapX, gridSnapY } = snapToGrid(
+        x,
+        y,
+        snapX,
+        snapY,
+        GRID_SIZE,
+        GRID_SNAP_THRESHOLD,
+      );
+      snapX = GRID_SNAP ? gripSnapX : snapX;
+      snapY = GRID_SNAP ? gridSnapY : snapY;
     }
 
     if (CAP_SNAP) {
-      snapToCap(lines, line, snapX, snapY, CAP_SNAP_THRESHOLD);
+      const { capSnapX, capSnapY } = snapToCap(
+        lines,
+        line,
+        snapX,
+        snapY,
+        CAP_SNAP_THRESHOLD,
+      );
+      snapX = CAP_SNAP ? capSnapX : snapX;
+      snapY = CAP_SNAP ? capSnapY : snapY;
     }
 
     draggingCircle.position({ x: snapX, y: snapY });
@@ -78,12 +85,16 @@ const CappedLine = ({
 
   return (
     <>
-      <Line points={line.points} stroke="black" strokeWidth={2} />
+      <Line
+        points={line.points}
+        stroke={line.active ? "lightblue" : "black"}
+        strokeWidth={2}
+      />
       <Circle
         x={line.points[0]}
         y={line.points[1]}
         radius={4}
-        fill="white"
+        fill={line.active ? "lightblue" : "white"}
         draggable
         name="capStart"
         onDragMove={handleDragMove}
@@ -95,7 +106,7 @@ const CappedLine = ({
         x={line.points[2]}
         y={line.points[3]}
         radius={4}
-        fill="white"
+        fill={line.active ? "lightblue" : "white"}
         draggable
         name="capEnd"
         onDragMove={handleDragMove}

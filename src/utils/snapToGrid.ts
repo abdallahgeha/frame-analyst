@@ -4,7 +4,7 @@ export default function snapToGrid(
   snapX: number,
   snapY: number,
   GRID_SIZE: number,
-  GRID_SNAP_THRESHOLD: number
+  GRID_SNAP_THRESHOLD: number,
 ) {
   snapX = Math.round(x / GRID_SIZE) * GRID_SIZE;
   snapY = Math.round(y / GRID_SIZE) * GRID_SIZE;
@@ -18,4 +18,6 @@ export default function snapToGrid(
     snapX = x;
     snapY = y;
   }
+
+  return { gripSnapX: snapX, gridSnapY: snapY };
 }

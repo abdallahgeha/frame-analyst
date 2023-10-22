@@ -1,48 +1,81 @@
-import { useState } from "react";
-import { Stage, Layer } from "react-konva";
+import { useEffect, useState } from "react";
+import { Stage, Layer, Rect } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
 import { KonvaMouse } from "~/types/konvaEvents.types";
-import { LineType } from "~/types/shapes.types";
-import { GRID_ON, GRID_SIZE, THROTTLE_DELAY } from "~/constants";
+import { LineType, coordinate } from "~/types/shapes.types";
+import {
+  CANVAS_HEIGHT,
+  CANVAS_WIDTH,
+  GRID_ON,
+  GRID_SIZE,
+  THROTTLE_DELAY,
+} from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
 
-const initLines: LineType[] = [
-  { id: "a", points: [100, 100, 200, 200], active: false },
-  { id: "b", points: [50, 50, 150, 150], active: false },
-  { id: "c", points: [33, 55, 70, 90], active: false },
-  { id: "d", points: [54, 90, 100, 30], active: false },
-];
-
-const DrawingCanvas = () => {
-  const [lines, setLines] = useState<LineType[]>(initLines);
+const DrawingCanvas = ({ type }: { type: string }) => {
+  const [lines, setLines] = useState<LineType[]>([]);
   const [isLineStart, setIsLineStart] = useState(false);
   const [activeLine, setActiveLine] = useState<LineType>({
     id: "default",
     points: [100, 100, 200, 200],
     active: true,
   });
+  const [activePointStart, setActivePointStart] = useState<coordinate>({x: 0, y: 0})
 
   const handleClick = (e: KonvaMouse) => {
-    const stage = e.target.getStage()
-    const clickLocation = stage!.getRelativePointerPosition();
+    const stage = e.target.getStage();
+    const clickLocation = stage!.getRelativePointerPosition()!;
 
-    if (!isLineStart) {
-      setIsLineStart(!isLineStart);
-      setActiveLine({
-        id: "active" + lines.length,
-        points: [
-          clickLocation!.x,
-          clickLocation!.y,
-          clickLocation!.x,
-          clickLocation!.y,
-        ],
-        active: true,
-      });
-    }
-    if (isLineStart) {
-      setIsLineStart(!isLineStart);
-      setLines((lines) => [...lines, activeLine]);
+    if (type === "line") {
+      if (!isLineStart) {
+        setIsLineStart(true);
+        setActivePointStart(clickLocation)
+        setActiveLine({
+          id: "active" + lines.length,
+          points: [
+            clickLocation.x,
+            clickLocation.y,
+            clickLocation.x,
+            clickLocation.y,
+          ],
+          active: true,
+        });
+      }
+      if (isLineStart) {
+        setIsLineStart(false);
+        const inactiveLine = { ...activeLine, active: false };
+        setLines((lines) => [...lines, inactiveLine]);
+      }
+    } else if (type === "continuous line") {
+      if (!isLineStart) {
+        setIsLineStart(true);
+        setActiveLine({
+          id: "active" + lines.length,
+          points: [
+            clickLocation.x,
+            clickLocation.y,
+            clickLocation.x,
+            clickLocation.y,
+          ],
+          active: true,
+        });
+      } else {
+        const previousLine = { ...activeLine, active: false };
+        const newLines = [...lines, previousLine];
+        setLines(newLines);
+
+        setActiveLine({
+          id: "active" + newLines.length,
+          points: [
+            clickLocation!.x,
+            clickLocation!.y,
+            clickLocation!.x,
+            clickLocation!.y,
+          ],
+          active: true,
+        });
+      }
     }
   };
 
@@ -66,10 +99,14 @@ const DrawingCanvas = () => {
 
   const handleMouseOverThrottled = throttle(handleMouseOver, THROTTLE_DELAY);
 
+  useEffect(() => {
+    if (type) setIsLineStart(false);
+  }, [type]);
+
   return (
     <Stage
-      width={800}
-      height={600}
+      width={CANVAS_WIDTH}
+      height={CANVAS_HEIGHT}
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}
     >
@@ -91,6 +128,16 @@ const DrawingCanvas = () => {
             lines={lines}
           />
         )}
+        {/* {type === "view" && (
+          <Rect
+            x={20}
+            y={50}
+            width={100}
+            height={100}
+            fill="red"
+            shadowBlur={10}
+          />
+        )} */}
       </Layer>
     </Stage>
   );
