@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { LineType } from "~/types/shapes.types";
 
 const NoSSRComponent = dynamic(() => import("../components/drawingCanvas"), {
   ssr: false,
@@ -7,6 +8,15 @@ const NoSSRComponent = dynamic(() => import("../components/drawingCanvas"), {
 
 export default function TestsPage() {
   const [type, setType] = useState("line");
+  const [lines, setLines] = useState<LineType[]>([]);
+
+  const unselect = () => {
+    const unselected = lines.map((line) => {
+      return { ...line, active: false };
+    });
+
+    setLines(unselected);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -16,6 +26,7 @@ export default function TestsPage() {
         setType("continuous line");
       } else if (event.key === "Escape") {
         setType("view");
+        unselect();
       } else if (event.key === "Enter") {
         const previousType = type;
         setType("view");
@@ -33,7 +44,7 @@ export default function TestsPage() {
   return (
     <div className="h-screen w-full bg-slate-50 p-20">
       <div className={`h-[700}px] w-[1200px] bg-slate-800`}>
-        <NoSSRComponent type={type} />
+        <NoSSRComponent type={type} setLines={setLines} lines={lines} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
@@ -13,68 +13,86 @@ import {
 } from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
 
-const DrawingCanvas = ({ type }: { type: string }) => {
-  const [lines, setLines] = useState<LineType[]>([]);
-  const [isLineStart, setIsLineStart] = useState(false);
-  const [activeLine, setActiveLine] = useState<LineType>({
-    id: "default",
-    points: [100, 100, 200, 200],
-    active: true,
-  });
-  const [activePointStart, setActivePointStart] = useState<coordinate>({x: 0, y: 0})
+const DrawingCanvas = ({
+  type,
+  setLines,
+  lines,
+}: {
+  type: string;
+  setLines: Dispatch<SetStateAction<LineType[]>>;
+  lines: LineType[];
+}) => {
+  const [activePointStart, setActivePointStart] = useState<coordinate | null>(
+    null,
+  );
+  const [activePointEnd, setActivePointEnd] = useState<coordinate | null>(null);
+
+  const selectLines = (start: coordinate, end: coordinate) => {
+    const selected = lines.map((line) => {
+      const [x1, y1, x2, y2] = line.points;
+      const xMin = Math.min(start.x, end.x);
+      const xMax = Math.max(start.x, end.x);
+      const yMin = Math.min(start.y, end.y);
+      const yMax = Math.max(start.y, end.y);
+
+      if (
+        (x1! >= xMin && x1! <= xMax && y1! >= yMin && y1! <= yMax) ||
+        (x2! >= xMin && x2! <= xMax && y2! >= yMin && y2! <= yMax)
+      ) {
+        return { ...line, active: true };
+      } else {
+        return { ...line, active: false };
+      }
+    });
+
+    setLines(selected);
+  };
 
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
     const clickLocation = stage!.getRelativePointerPosition()!;
 
-    if (type === "line") {
-      if (!isLineStart) {
-        setIsLineStart(true);
-        setActivePointStart(clickLocation)
-        setActiveLine({
-          id: "active" + lines.length,
+    if (!activePointStart) {
+      setActivePointStart(clickLocation);
+    } else if (activePointStart) {
+      if (type === "line") {
+        const inactiveLine = {
+          id: `${lines.length}`,
           points: [
-            clickLocation.x,
-            clickLocation.y,
-            clickLocation.x,
-            clickLocation.y,
+            activePointStart!.x,
+            activePointStart!.y,
+            activePointEnd!.x,
+            activePointEnd!.y,
           ],
-          active: true,
-        });
-      }
-      if (isLineStart) {
-        setIsLineStart(false);
-        const inactiveLine = { ...activeLine, active: false };
+          active: false,
+        };
         setLines((lines) => [...lines, inactiveLine]);
+        setActivePointStart(null);
+        setActivePointEnd(null);
       }
-    } else if (type === "continuous line") {
-      if (!isLineStart) {
-        setIsLineStart(true);
-        setActiveLine({
-          id: "active" + lines.length,
+      if (type === "continuous line") {
+        const inactiveLine = {
+          id: `${lines.length}`,
           points: [
-            clickLocation.x,
-            clickLocation.y,
-            clickLocation.x,
-            clickLocation.y,
+            activePointStart!.x,
+            activePointStart!.y,
+            activePointEnd!.x,
+            activePointEnd!.y,
           ],
-          active: true,
-        });
-      } else {
-        const previousLine = { ...activeLine, active: false };
-        const newLines = [...lines, previousLine];
-        setLines(newLines);
+          active: false,
+        };
+        setLines((lines) => [...lines, inactiveLine]);
+        setActivePointStart(clickLocation);
+        setActivePointEnd(clickLocation);
+      }
 
-        setActiveLine({
-          id: "active" + newLines.length,
-          points: [
-            clickLocation!.x,
-            clickLocation!.y,
-            clickLocation!.x,
-            clickLocation!.y,
-          ],
-          active: true,
-        });
+      if (type === "view") {
+        if (activePointStart && activePointEnd) {
+          selectLines(activePointStart, activePointEnd);
+        }
+
+        setActivePointStart(null);
+        setActivePointEnd(null);
       }
     }
   };
@@ -83,24 +101,33 @@ const DrawingCanvas = ({ type }: { type: string }) => {
     const stage = e.target.getStage();
     const position = stage?.getPointerPosition();
 
-    if (!!position && !!stage) {
-      setActiveLine((activeLine) => {
-        const newPoints = [...activeLine.points];
-        if (!!location && position.x > 10) {
-          newPoints[2] = position.x;
-        }
-        if (!!location && position.y > 10) {
-          newPoints[3] = position.y;
-        }
-        return { ...activeLine, points: newPoints };
-      });
+    if (!!position && !!stage && activePointStart) {
+      setActivePointEnd(position);
     }
+  };
+
+  const getActiveLine = () => {
+    if (activePointStart && activePointEnd) {
+      const newPoints = [
+        activePointStart.x,
+        activePointStart.y,
+        activePointEnd.x,
+        activePointEnd.y,
+      ];
+      return { id: "active" + lines.length, points: newPoints, active: true };
+    }
+
+    return { id: "active" + lines.length, points: [], active: true };
   };
 
   const handleMouseOverThrottled = throttle(handleMouseOver, THROTTLE_DELAY);
 
   useEffect(() => {
-    if (type) setIsLineStart(false);
+    if (type) {
+      selectLines({ x: 0, y: 0 }, { x: 0, y: 0 });
+      setActivePointStart(null);
+      setActivePointEnd(null);
+    }
   }, [type]);
 
   return (
@@ -120,24 +147,26 @@ const DrawingCanvas = ({ type }: { type: string }) => {
             lines={lines}
           />
         ))}
-        {isLineStart && (
-          <CappedLine
-            key={"active" + lines.length}
-            line={activeLine}
-            setLines={setLines}
-            lines={lines}
+        {!!activePointStart &&
+          (type === "line" || type === "continuous line") && (
+            <CappedLine
+              key={"active" + lines.length}
+              line={getActiveLine()}
+              setLines={setLines}
+              lines={lines}
+            />
+          )}
+        {type === "view" && activePointStart && activePointEnd && (
+          <Rect
+            x={activePointStart.x}
+            y={activePointStart.y}
+            width={activePointEnd.x - activePointStart.x}
+            height={activePointEnd.y - activePointStart.y}
+            fill="lightgreen"
+            strokeWidth={3}
+            opacity={0.5}
           />
         )}
-        {/* {type === "view" && (
-          <Rect
-            x={20}
-            y={50}
-            width={100}
-            height={100}
-            fill="red"
-            shadowBlur={10}
-          />
-        )} */}
       </Layer>
     </Stage>
   );
