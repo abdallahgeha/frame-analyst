@@ -11,7 +11,7 @@ const GridLayer = ({
   if (!isGridOn) return null;
 
   // Calculate the number of grid squares required based on the canvas size
-  const numVerticalLines = Math.ceil(CANVAS_WIDTH / gridSize); 
+  const numVerticalLines = Math.ceil(CANVAS_WIDTH / gridSize);
   const numHorizontalLines = Math.ceil(CANVAS_HEIGHT / gridSize);
 
   // Create an array to store the grid line components
@@ -23,10 +23,10 @@ const GridLayer = ({
     verticalLines.push(
       <Line
         key={`vertical_${i}`}
-        points={[i * gridSize, 0, i * gridSize, CANVAS_HEIGHT]} 
-        stroke="gray"
-        strokeWidth={1}
-        opacity={0.5}
+        points={[i * gridSize, 0, i * gridSize, CANVAS_HEIGHT]}
+        stroke={i == 6 ? "red" : "darkgray"}
+        strokeWidth={i == 6 ? 1 : 0.5}
+        opacity={i == 6 ? 0.8 : 0.5}
       />,
     );
   }
@@ -36,9 +36,10 @@ const GridLayer = ({
     horizontalLines.push(
       <Line
         key={`horizontal_${i}`}
-        points={[0, i * gridSize, CANVAS_WIDTH, i * gridSize]} 
-        stroke="gray"
-        strokeWidth={1}
+        points={[0, i * gridSize, CANVAS_WIDTH, i * gridSize]}
+        stroke={i == numHorizontalLines - 6 ? "green" : "darkgray"}
+        strokeWidth={i == numHorizontalLines - 6 ? 1 : 0.5}
+        opacity={i == numHorizontalLines - 6 ? 0.8 : 0.5}
       />,
     );
   }
@@ -49,20 +50,20 @@ const GridLayer = ({
       {horizontalLines}
       <Line
         points={[
-          2 * gridSize,
-          600 - 2 * gridSize,
-          2 * gridSize,
-          600 - 5 * gridSize,
+          6 * gridSize,
+          CANVAS_HEIGHT - 6 * gridSize,
+          6 * gridSize,
+          CANVAS_HEIGHT - 9 * gridSize,
         ]}
         stroke="red"
         strokeWidth={3}
       />
       <Line
         points={[
-          2 * gridSize,
-          600 - 2 * gridSize,
-          2 * gridSize + 3 * gridSize,
-          600 - 2 * gridSize,
+          6 * gridSize,
+          CANVAS_HEIGHT - 6 * gridSize,
+          6 * gridSize + 3 * gridSize,
+          CANVAS_HEIGHT - 6 * gridSize,
         ]}
         stroke="green"
         strokeWidth={3}

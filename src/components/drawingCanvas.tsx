@@ -10,9 +10,46 @@ import {
   GRID_ON,
   GRID_SIZE,
   THROTTLE_DELAY,
+  CAP_SNAP,
+  CAP_SNAP_THRESHOLD,
+  GRID_SNAP,
+  GRID_SNAP_THRESHOLD,
 } from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
+import snapToGrid from "~/utils/snapToGrid";
+import snapToCap from "~/utils/snapToCap";
 
+const snap = (position: coordinate, lines: LineType[]) => {
+  let snapX = position.x;
+  let snapY = position.y;
+
+  if (GRID_SNAP) {
+    const { gripSnapX, gridSnapY } = snapToGrid(
+      position.x,
+      position.y,
+      snapX,
+      snapY,
+      GRID_SIZE,
+      GRID_SNAP_THRESHOLD,
+    );
+    snapX = GRID_SNAP ? gripSnapX : snapX;
+    snapY = GRID_SNAP ? gridSnapY : snapY;
+  }
+
+  if (CAP_SNAP) {
+    const { capSnapX, capSnapY } = snapToCap(
+      lines,
+      { id: "", points: [], active: false },
+      snapX,
+      snapY,
+      CAP_SNAP_THRESHOLD,
+    );
+    snapX = CAP_SNAP ? capSnapX : snapX;
+    snapY = CAP_SNAP ? capSnapY : snapY;
+  }
+
+  return { snapX, snapY };
+};
 const DrawingCanvas = ({
   type,
   setLines,
@@ -50,11 +87,14 @@ const DrawingCanvas = ({
 
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
-    const clickLocation = stage!.getRelativePointerPosition()!;
+    let clickLocation = stage!.getRelativePointerPosition()!;
 
+    const { snapX, snapY } = snap(clickLocation, lines);
+    clickLocation = { x: snapX, y: snapY };
+    
     if (!activePointStart) {
       setActivePointStart(clickLocation);
-    } else if (activePointStart) {
+    } else {
       if (type === "line") {
         const inactiveLine = {
           id: `${lines.length}`,
@@ -102,7 +142,8 @@ const DrawingCanvas = ({
     const position = stage?.getPointerPosition();
 
     if (!!position && !!stage && activePointStart) {
-      setActivePointEnd(position);
+      const { snapX, snapY } = snap(position, lines);
+      setActivePointEnd({ x: snapX, y: snapY });
     }
   };
 

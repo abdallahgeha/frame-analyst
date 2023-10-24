@@ -87,7 +87,7 @@ const CappedLine = ({
     <>
       <Line
         points={line.points}
-        stroke={line.active ? "lightblue" : "black"}
+        stroke={line.active ? "lightblue" : "lightgray"}
         strokeWidth={2}
       />
       <Circle
