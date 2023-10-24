@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Stage, Layer, Rect } from "react-konva";
+import { Stage, Layer, Rect, Text, Group } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
 import { KonvaMouse } from "~/types/konvaEvents.types";
@@ -18,6 +18,7 @@ import {
 import CappedLine from "./cappedLine/cappedLine";
 import snapToGrid from "~/utils/snapToGrid";
 import snapToCap from "~/utils/snapToCap";
+import toCoordinate from "~/utils/toCoordnate";
 
 const snap = (position: coordinate, lines: LineType[]) => {
   let snapX = position.x;
@@ -91,7 +92,7 @@ const DrawingCanvas = ({
 
     const { snapX, snapY } = snap(clickLocation, lines);
     clickLocation = { x: snapX, y: snapY };
-    
+
     if (!activePointStart) {
       setActivePointStart(clickLocation);
     } else {
@@ -207,6 +208,44 @@ const DrawingCanvas = ({
             strokeWidth={3}
             opacity={0.5}
           />
+        )}
+        {activePointEnd && type !== "view" && (
+          <Group x={activePointEnd.x + 20} y={activePointEnd.y - 20}>
+            <Rect
+              width={80}
+              height={30}
+              fill="green"
+              cornerRadius={[10, 0, 0, 10]}
+              opacity={0.7}
+            />
+            <Rect
+              x={80}
+              width={80}
+              height={30}
+              fill="red"
+              cornerRadius={[0, 10, 10, 0]}
+              opacity={0.7}
+            />
+            <Text
+              text={toCoordinate(activePointEnd).x}
+              fontSize={16}
+              fill="white"
+              align="center"
+              verticalAlign="middle"
+              width={80}
+              padding={10}
+            />
+            <Text
+              x={80}
+              text={toCoordinate(activePointEnd).y}
+              fontSize={16}
+              fill="#FFFFFF"
+              align="center"
+              verticalAlign="middle"
+              width={80}
+              padding={10}
+            />
+          </Group>
         )}
       </Layer>
     </Stage>

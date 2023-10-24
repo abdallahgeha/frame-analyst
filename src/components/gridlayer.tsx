@@ -1,5 +1,5 @@
 import { Layer, Line } from "react-konva";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "~/constants";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, xOffset, yOffset } from "~/constants";
 
 const GridLayer = ({
   gridSize,
@@ -24,9 +24,9 @@ const GridLayer = ({
       <Line
         key={`vertical_${i}`}
         points={[i * gridSize, 0, i * gridSize, CANVAS_HEIGHT]}
-        stroke={i == 6 ? "red" : "darkgray"}
-        strokeWidth={i == 6 ? 1 : 0.5}
-        opacity={i == 6 ? 0.8 : 0.5}
+        stroke={i == xOffset ? "red" : "darkgray"}
+        strokeWidth={i == xOffset ? 1 : 0.5}
+        opacity={i == xOffset ? 0.8 : 0.5}
       />,
     );
   }
@@ -37,9 +37,9 @@ const GridLayer = ({
       <Line
         key={`horizontal_${i}`}
         points={[0, i * gridSize, CANVAS_WIDTH, i * gridSize]}
-        stroke={i == numHorizontalLines - 6 ? "green" : "darkgray"}
-        strokeWidth={i == numHorizontalLines - 6 ? 1 : 0.5}
-        opacity={i == numHorizontalLines - 6 ? 0.8 : 0.5}
+        stroke={i == yOffset ? "green" : "darkgray"}
+        strokeWidth={i == yOffset ? 1 : 0.5}
+        opacity={i == yOffset ? 0.8 : 0.5}
       />,
     );
   }
@@ -50,20 +50,20 @@ const GridLayer = ({
       {horizontalLines}
       <Line
         points={[
-          6 * gridSize,
-          CANVAS_HEIGHT - 6 * gridSize,
-          6 * gridSize,
-          CANVAS_HEIGHT - 9 * gridSize,
+          xOffset * gridSize,
+          yOffset * gridSize,
+          xOffset * gridSize,
+          (yOffset - 3) * gridSize,
         ]}
         stroke="red"
         strokeWidth={3}
       />
       <Line
         points={[
-          6 * gridSize,
-          CANVAS_HEIGHT - 6 * gridSize,
-          6 * gridSize + 3 * gridSize,
-          CANVAS_HEIGHT - 6 * gridSize,
+          xOffset * gridSize,
+          yOffset * gridSize,
+          (xOffset + 3) * gridSize,
+          yOffset * gridSize,
         ]}
         stroke="green"
         strokeWidth={3}
