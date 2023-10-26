@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
-import { LineType } from "~/types/shapes.types";
+import { LineType, pinWithId } from "~/types/shapes.types";
 
 const NoSSRComponent = dynamic(() => import("../components/drawingCanvas"), {
   ssr: false,
@@ -11,6 +11,7 @@ export default function TestsPage() {
   const pageRef = useRef<KeyActions>();
   const [type, setType] = useState("line");
   const [lines, setLines] = useState<LineType[]>([]);
+  const [pins, setPins] = useState<pinWithId[]>([]);
 
   const unselect = () => {
     const unselected = lines.map((line) => {
@@ -21,9 +22,9 @@ export default function TestsPage() {
   };
 
   const deleteLines = () => {
-    const undeletedLines = lines.filter(line => !line.active)
+    const undeletedLines = lines.filter((line) => !line.active);
     setLines(undeletedLines);
-  }
+  };
 
   pageRef.current = (event: KeyboardEvent) => {
     if (event.key === "l") {
@@ -38,7 +39,9 @@ export default function TestsPage() {
       setType("view");
       setType(previousType);
     } else if (event.key === "d") {
-      deleteLines()
+      deleteLines();
+    } else if (event.key === "p") {
+      setType("pin");
     }
   };
 
@@ -56,8 +59,17 @@ export default function TestsPage() {
 
   return (
     <div className="h-screen w-full bg-slate-50">
-    <div className="bg-slate-800" style={{ width: `calc(100vw - 40px)`, height: `calc(100vh - 60px)` }}>
-        <NoSSRComponent type={type} setLines={setLines} lines={lines} />
+      <div
+        className="bg-slate-800"
+        style={{ width: `calc(100vw - 40px)`, height: `calc(100vh - 60px)` }}
+      >
+        <NoSSRComponent
+          type={type}
+          setLines={setLines}
+          lines={lines}
+          pins={pins}
+          setPins={setPins}
+        />
       </div>
     </div>
   );

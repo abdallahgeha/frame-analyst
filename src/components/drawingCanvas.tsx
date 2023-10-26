@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Stage, Layer, Rect, Text, Group } from "react-konva";
+import { Stage, Layer, Rect, Text, Group, Circle } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
 import { KonvaMouse } from "~/types/konvaEvents.types";
-import { LineType, coordinate } from "~/types/shapes.types";
+import { LineType, coordinate, pinWithId } from "~/types/shapes.types";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -19,6 +19,7 @@ import CappedLine from "./cappedLine/cappedLine";
 import snapToGrid from "~/utils/snapToGrid";
 import snapToCap from "~/utils/snapToCap";
 import toCoordinate from "~/utils/toCoordnate";
+import Pin from "./pin/pin";
 
 const snap = (position: coordinate, lines: LineType[]) => {
   let snapX = position.x;
@@ -55,10 +56,14 @@ const DrawingCanvas = ({
   type,
   setLines,
   lines,
+  pins,
+  setPins,
 }: {
   type: string;
   setLines: Dispatch<SetStateAction<LineType[]>>;
   lines: LineType[];
+  pins: pinWithId[];
+  setPins: Dispatch<SetStateAction<pinWithId[]>>;
 }) => {
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
@@ -94,6 +99,13 @@ const DrawingCanvas = ({
     clickLocation = { x: snapX, y: snapY };
 
     if (!activePointStart) {
+      if (type == "pin") {
+        setPins((pins) => [
+          ...pins,
+          { ...clickLocation, id: "pin" + pins.length },
+        ]);
+        return;
+      }
       setActivePointStart(clickLocation);
     } else {
       if (type === "line") {
@@ -188,6 +200,9 @@ const DrawingCanvas = ({
             setLines={setLines}
             lines={lines}
           />
+        ))}
+        {pins.map((pin) => (
+          <Pin pin={pin}  key={pin.id} />
         ))}
         {!!activePointStart &&
           (type === "line" || type === "continuous line") && (
