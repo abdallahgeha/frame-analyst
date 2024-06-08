@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { Circle, Line } from "react-konva";
+import { Circle, Line, Rect } from "react-konva";
 import {
   CAP_SNAP,
   CAP_SNAP_THRESHOLD,
@@ -10,21 +10,21 @@ import {
   PIN_SNAP_THRESHOLD,
 } from "~/constants";
 import { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
-import { LineType, pinWithId } from "~/types/shapes.types";
+import { LineType, RectType, pinWithId } from "~/types/shapes.types";
 import snapToCap from "~/utils/snapToCap";
 import snapToGrid from "~/utils/snapToGrid";
 import snapToPin from "~/utils/snapToPin";
 
-const CappedLine = ({
-  line,
+const CappedRect = ({
+  rect,
   lines,
   pins,
-  setLines,
+  setRects,
 }: {
-  line: LineType;
+  rect: RectType;
   lines: LineType[];
   pins: pinWithId[];
-  setLines: Dispatch<SetStateAction<LineType[]>>;
+  setRects: Dispatch<SetStateAction<RectType[]>>;
 }) => {
   const handleDragMove = (e: KonvaDrag) => {
     const draggingCircle = e.target;
@@ -50,7 +50,7 @@ const CappedLine = ({
     if (CAP_SNAP) {
       const { capSnapX, capSnapY } = snapToCap(
         lines,
-        line,
+        rect,
         snapX,
         snapY,
         CAP_SNAP_THRESHOLD,
@@ -73,17 +73,17 @@ const CappedLine = ({
     draggingCircle.position({ x: snapX, y: snapY });
 
     if (e.target.name() === "capStart") {
-      line.points[0] = snapX;
-      line.points[1] = snapY;
+      rect.points[0] = snapX;
+      rect.points[1] = snapY;
     } else if (e.target.name() === "capEnd") {
-      line.points[2] = snapX;
-      line.points[3] = snapY;
+      rect.points[2] = snapX;
+      rect.points[3] = snapY;
     }
 
-    setLines((prevLines) =>
+    setRects((prevLines) =>
       prevLines.map((prevLine) =>
-        prevLine.id === line.id
-          ? { ...prevLine, points: line.points }
+        prevLine.id === rect.id
+          ? { ...prevLine, points: rect.points }
           : prevLine,
       ),
     );
@@ -101,16 +101,36 @@ const CappedLine = ({
 
   return (
     <>
-      <Line
-        points={line.points}
-        stroke={line.active ? "lightblue" : "lightgray"}
-        strokeWidth={2}
+      <Rect
+        x={rect.points[0]}
+        y={rect.points[1]}
+        width={rect.points[2] - rect.points[0]}
+        height={rect.points[3] - rect.points[1]}
+        fill={rect.active ? "lightblue" : "lightgray"}
+        draggable
+        opacity={0.2}
+        onDragMove={handleDragMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        hitStrokeWidth={10}
+      />
+      <Rect
+        x={rect.points[0]}
+        y={rect.points[1]}
+        width={rect.points[2] - rect.points[0]}
+        height={rect.points[3] - rect.points[1]}
+        draggable
+        onDragMove={handleDragMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        stroke={"white"}
+        hitStrokeWidth={10}
       />
       <Circle
-        x={line.points[0]}
-        y={line.points[1]}
+        x={rect.points[0]}
+        y={rect.points[1]}
         radius={4}
-        fill={line.active ? "lightblue" : "white"}
+        fill={rect.active ? "lightblue" : "white"}
         draggable
         name="capStart"
         onDragMove={handleDragMove}
@@ -119,12 +139,36 @@ const CappedLine = ({
         hitStrokeWidth={10}
       />
       <Circle
-        x={line.points[2]}
-        y={line.points[3]}
+        x={rect.points[2]}
+        y={rect.points[3]}
         radius={4}
-        fill={line.active ? "lightblue" : "white"}
+        fill={rect.active ? "lightblue" : "white"}
         draggable
         name="capEnd"
+        onDragMove={handleDragMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        hitStrokeWidth={10}
+      />
+      <Circle
+        x={rect.points[0]}
+        y={rect.points[3]}
+        radius={4}
+        fill={rect.active ? "lightblue" : "white"}
+        draggable
+        name="capOtherStart"
+        onDragMove={handleDragMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        hitStrokeWidth={10}
+      />
+      <Circle
+        x={rect.points[2]}
+        y={rect.points[1]}
+        radius={4}
+        fill={rect.active ? "lightblue" : "white"}
+        draggable
+        name="capOtherEnd"
         onDragMove={handleDragMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -134,4 +178,4 @@ const CappedLine = ({
   );
 };
 
-export default CappedLine;
+export default CappedRect;

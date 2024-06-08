@@ -3,7 +3,12 @@ import { Stage, Layer, Rect, Text, Group, Circle } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
 import { KonvaMouse } from "~/types/konvaEvents.types";
-import { LineType, coordinate, pinWithId } from "~/types/shapes.types";
+import {
+  LineType,
+  RectType,
+  coordinate,
+  pinWithId,
+} from "~/types/shapes.types";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
@@ -14,14 +19,18 @@ import {
   CAP_SNAP_THRESHOLD,
   GRID_SNAP,
   GRID_SNAP_THRESHOLD,
+  PIN_SNAP,
+  PIN_SNAP_THRESHOLD,
 } from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
 import snapToGrid from "~/utils/snapToGrid";
 import snapToCap from "~/utils/snapToCap";
 import toCoordinate from "~/utils/toCoordnate";
 import Pin from "./pin/pin";
+import snapToPin from "~/utils/snapToPin";
+import CappedRect from "./cappedRect/cappedRect";
 
-const snap = (position: coordinate, lines: LineType[]) => {
+const snap = (position: coordinate, lines: LineType[], pins: pinWithId[]) => {
   let snapX = position.x;
   let snapY = position.y;
 
@@ -50,20 +59,35 @@ const snap = (position: coordinate, lines: LineType[]) => {
     snapY = CAP_SNAP ? capSnapY : snapY;
   }
 
+  if (PIN_SNAP) {
+    const { pinSnapX, pinSnapY } = snapToPin(
+      pins,
+      snapX,
+      snapY,
+      PIN_SNAP_THRESHOLD,
+    );
+    snapX = PIN_SNAP ? pinSnapX : snapX;
+    snapY = PIN_SNAP ? pinSnapY : snapY;
+  }
+
   return { snapX, snapY };
 };
 const DrawingCanvas = ({
   type,
-  setLines,
   lines,
   pins,
+  rects,
+  setLines,
   setPins,
+  setRects,
 }: {
   type: string;
-  setLines: Dispatch<SetStateAction<LineType[]>>;
   lines: LineType[];
   pins: pinWithId[];
+  rects: RectType[];
+  setLines: Dispatch<SetStateAction<LineType[]>>;
   setPins: Dispatch<SetStateAction<pinWithId[]>>;
+  setRects: Dispatch<SetStateAction<RectType[]>>;
 }) => {
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
@@ -91,18 +115,60 @@ const DrawingCanvas = ({
     setLines(selected);
   };
 
+  const selectPins = (start: coordinate, end: coordinate) => {
+    const selected = pins.map((pin) => {
+      const x = pin.x;
+      const y = pin.y;
+      const xMin = Math.min(start.x, end.x);
+      const xMax = Math.max(start.x, end.x);
+      const yMin = Math.min(start.y, end.y);
+      const yMax = Math.max(start.y, end.y);
+
+      if (x! >= xMin && x! <= xMax && y! >= yMin && y! <= yMax) {
+        return { ...pin, active: true };
+      } else {
+        return { ...pin, active: false };
+      }
+    });
+
+    setPins(selected);
+  }
+
+  const selectRects = (start: coordinate, end: coordinate) => {
+    const selected = rects.map((rect) => {
+      const [x1, y1, x2, y2] = rect.points;
+      const xMin = Math.min(start.x, end.x);
+      const xMax = Math.max(start.x, end.x);
+      const yMin = Math.min(start.y, end.y);
+      const yMax = Math.max(start.y, end.y);
+
+      if (
+        (x1! >= xMin && x1! <= xMax && y1! >= yMin && y1! <= yMax) ||
+        (x2! >= xMin && x2! <= xMax && y2! >= yMin && y2! <= yMax) ||
+        (x1! >= xMin && x1! <= xMax && y2! >= yMin && y2! <= yMax) ||
+        (x2! >= xMin && x2! <= xMax && y1! >= yMin && y1! <= yMax)
+      ) {
+        return { ...rect, active: true };
+      } else {
+        return { ...rect, active: false };
+      }
+    });
+
+    setRects(selected);
+  }
+
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
     let clickLocation = stage!.getRelativePointerPosition()!;
 
-    const { snapX, snapY } = snap(clickLocation, lines);
+    const { snapX, snapY } = snap(clickLocation, lines, pins);
     clickLocation = { x: snapX, y: snapY };
 
     if (!activePointStart) {
       if (type == "pin") {
         setPins((pins) => [
           ...pins,
-          { ...clickLocation, id: "pin" + pins.length },
+          { ...clickLocation, id: "pin" + pins.length, active: false},
         ]);
         return;
       }
@@ -139,9 +205,28 @@ const DrawingCanvas = ({
         setActivePointEnd(clickLocation);
       }
 
+      if (type === "rect") {
+        const points: [number, number, number, number] = [
+          activePointStart!.x,
+          activePointStart!.y,
+          activePointEnd!.x,
+          activePointEnd!.y,
+        ];
+        const inactiveRect = {
+          id: `${rects.length}`,
+          points,
+          active: false,
+        };
+        setRects((rects) => [...rects, inactiveRect]);
+        setActivePointStart(null);
+        setActivePointEnd(null);
+      }
+
       if (type === "view") {
         if (activePointStart && activePointEnd) {
           selectLines(activePointStart, activePointEnd);
+          selectPins(activePointStart, activePointEnd);
+          selectRects(activePointStart, activePointEnd);
         }
 
         setActivePointStart(null);
@@ -155,7 +240,7 @@ const DrawingCanvas = ({
     const position = stage?.getPointerPosition();
 
     if (!!position && !!stage && activePointStart) {
-      const { snapX, snapY } = snap(position, lines);
+      const { snapX, snapY } = snap(position, lines, pins);
       setActivePointEnd({ x: snapX, y: snapY });
     }
   };
@@ -197,22 +282,45 @@ const DrawingCanvas = ({
           <CappedLine
             key={line.id}
             line={line}
+            pins={pins}
             setLines={setLines}
             lines={lines}
           />
         ))}
+        {rects.map((rect) => (
+          <CappedRect
+            key={rect.id}
+            rect={rect}
+            pins={pins}
+            setRects={setRects}
+            lines={lines}
+          />
+        ))}
         {pins.map((pin) => (
-          <Pin pin={pin}  key={pin.id} />
+          <Pin pin={pin} key={pin.id} />
         ))}
         {!!activePointStart &&
           (type === "line" || type === "continuous line") && (
             <CappedLine
               key={"active" + lines.length}
               line={getActiveLine()}
+              pins={pins}
               setLines={setLines}
               lines={lines}
             />
           )}
+        {type === "rect" && activePointStart && activePointEnd && (
+          <Rect
+            x={activePointStart.x}
+            y={activePointStart.y}
+            width={activePointEnd.x - activePointStart.x}
+            height={activePointEnd.y - activePointStart.y}
+            fill="gray"
+            stroke="white"
+            opacity={0.3}
+            strokeWidth={2}
+          />
+        )}
         {type === "view" && activePointStart && activePointEnd && (
           <Rect
             x={activePointStart.x}
