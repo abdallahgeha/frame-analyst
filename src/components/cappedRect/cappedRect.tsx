@@ -1,74 +1,20 @@
-import { Dispatch, SetStateAction } from "react";
-import { Circle, Line, Rect } from "react-konva";
-import {
-  CAP_SNAP,
-  CAP_SNAP_THRESHOLD,
-  GRID_SIZE,
-  GRID_SNAP,
-  GRID_SNAP_THRESHOLD,
-  PIN_SNAP,
-  PIN_SNAP_THRESHOLD,
-} from "~/constants";
-import { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
-import { LineType, RectType, pinWithId } from "~/types/shapes.types";
-import snapToCap from "~/utils/snapToCap";
-import snapToGrid from "~/utils/snapToGrid";
-import snapToPin from "~/utils/snapToPin";
+import { useContext, type Dispatch, type SetStateAction } from "react";
+import { Circle, Rect } from "react-konva";
+import { ObjectsContext } from "~/contexts/objectsContexts";
+import useSnap from "~/hooks/useSnap";
+import type { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
+import type { ObjectsType, RectType } from "~/types/shapes.types";
 
-const CappedRect = ({
-  rect,
-  lines,
-  pins,
-  setRects,
-}: {
-  rect: RectType;
-  lines: LineType[];
-  pins: pinWithId[];
-  setRects: Dispatch<SetStateAction<RectType[]>>;
-}) => {
+const CappedRect = ({ rect }: { rect: RectType }) => {
+  const [_, setObjects] = useContext(ObjectsContext);
+  const snap = useSnap();
+
   const handleDragMove = (e: KonvaDrag) => {
     const draggingCircle = e.target;
     const x = draggingCircle.x();
     const y = draggingCircle.y();
 
-    let snapX = x;
-    let snapY = y;
-
-    if (GRID_SNAP) {
-      const { gripSnapX, gridSnapY } = snapToGrid(
-        x,
-        y,
-        snapX,
-        snapY,
-        GRID_SIZE,
-        GRID_SNAP_THRESHOLD,
-      );
-      snapX = GRID_SNAP ? gripSnapX : snapX;
-      snapY = GRID_SNAP ? gridSnapY : snapY;
-    }
-
-    if (CAP_SNAP) {
-      const { capSnapX, capSnapY } = snapToCap(
-        lines,
-        rect,
-        snapX,
-        snapY,
-        CAP_SNAP_THRESHOLD,
-      );
-      snapX = CAP_SNAP ? capSnapX : snapX;
-      snapY = CAP_SNAP ? capSnapY : snapY;
-    }
-
-    if (PIN_SNAP) {
-      const { pinSnapX, pinSnapY } = snapToPin(
-        pins,
-        snapX,
-        snapY,
-        PIN_SNAP_THRESHOLD,
-      );
-      snapX = PIN_SNAP ? pinSnapX : snapX;
-      snapY = PIN_SNAP ? pinSnapY : snapY;
-    }
+    const { snapX, snapY } = snap({ x, y });
 
     draggingCircle.position({ x: snapX, y: snapY });
 
@@ -80,13 +26,21 @@ const CappedRect = ({
       rect.points[3] = snapY;
     }
 
-    setRects((prevLines) =>
-      prevLines.map((prevLine) =>
-        prevLine.id === rect.id
-          ? { ...prevLine, points: rect.points }
-          : prevLine,
+    setObjects((prevObjects) =>
+      prevObjects.map((prevObject) =>
+        prevObject.id === rect.id
+          ? { ...rect, points: rect.points }
+          : prevObject,
       ),
     );
+
+    // setRects((prevLines) =>
+    //   prevLines.map((prevLine) =>
+    //     prevLine.id === rect.id
+    //       ? { ...prevLine, points: rect.points }
+    //       : prevLine,
+    //   ),
+    // );
   };
 
   const handleMouseEnter = (e: KonvaMouse) => {

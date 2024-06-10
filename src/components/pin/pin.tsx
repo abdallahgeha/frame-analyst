@@ -1,6 +1,6 @@
 import { Circle } from "react-konva";
-import { KonvaMouse } from "~/types/konvaEvents.types";
-import { pinWithId } from "~/types/shapes.types";
+import type { KonvaMouse } from "~/types/konvaEvents.types";
+import type { pinWithId } from "~/types/shapes.types";
 
 const Pin = ({ pin }: { pin: pinWithId }) => {
   const handleMouseEnter = (e: KonvaMouse) => {

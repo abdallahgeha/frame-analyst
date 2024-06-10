@@ -1,40 +1,31 @@
-import { coordinate } from "~/types/shapes.types";
+import { useContext } from "react";
+import { TypeContext } from "~/contexts/typeContext";
+import { useAnalysisPage } from "~/hooks/useAnalysisPage.hook";
+import type { DrawType, coordinate } from "~/types/shapes.types";
 import { cn } from "~/utils/cn";
 
-const controlButtons = [
+const controlButtons: { title: string; type: DrawType }[] = [
   { title: "View", type: "view" },
   { title: "Line", type: "line" },
-  { title: "Polyline", type: "continuous line" },
+  { title: "Polyline", type: "polyline" },
   { title: "Pin", type: "pin" },
   { title: "Rectangle", type: "rect" },
   { title: "Delete", type: "delete" },
   { title: "Clear", type: "clear" },
 ];
 
-const ControlBar = ({
-  activeType,
-  currentPosition,
-  setType,
-  deleteLines,
-  clear,
-}: {
-  activeType: string;
-  currentPosition: coordinate | null;
-  setType: (type: string) => void;
-  deleteLines: () => void;
-  clear: () => void;
-}) => {
+const ControlBar = ({ currentPosition }: { currentPosition?: coordinate }) => {
+  const { deleteSelected, clear } = useAnalysisPage();
+
   return (
-    <nav className="flex max-w-7xl items-center bg-gray-700 py-1 ml-32 mr-auto">
+    <nav className="ml-32 mr-auto flex max-w-7xl items-center bg-gray-700 py-1">
       <div className="flex">
         {controlButtons.map((button) => (
           <ControlButton
             key={button.title}
             title={button.title}
-            type={button.type}
-            active={activeType === button.type}
-            setType={setType}
-            deleteLines={deleteLines}
+            buttonType={button.type}
+            deleteLines={deleteSelected}
             clear={clear}
           />
         ))}
@@ -48,29 +39,29 @@ const ControlBar = ({
 
 const ControlButton = ({
   title,
-  type,
-  active,
-  setType,
+  buttonType,
   deleteLines,
   clear,
 }: {
   title: string;
-  type: string;
-  active: boolean;
-  setType: (type: string) => void;
+  buttonType: DrawType;
   deleteLines: () => void;
   clear: () => void;
 }) => {
+  const [activeType, setType] = useContext(TypeContext);
+
   const handleClick = () => {
-    if (type === "delete") {
+    if (buttonType === "delete") {
       deleteLines();
       return;
-    } else if (type === "clear") {
+    } else if (buttonType === "clear") {
       clear();
     } else {
-      setType(type);
+      setType(buttonType);
     }
   };
+
+  const active = activeType === buttonType;
 
   return (
     <button

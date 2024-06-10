@@ -3,11 +3,11 @@ export default function snapToGrid(
   y: number,
   snapX: number,
   snapY: number,
-  GRID_SIZE: number,
+  gridSize: number,
   GRID_SNAP_THRESHOLD: number,
 ) {
-  snapX = Math.round(x / GRID_SIZE) * GRID_SIZE;
-  snapY = Math.round(y / GRID_SIZE) * GRID_SIZE;
+  snapX = Math.round(x / gridSize) * gridSize;
+  snapY = Math.round(y / gridSize) * gridSize;
 
   const deltaX = x - snapX;
   const deltaY = y - snapY;

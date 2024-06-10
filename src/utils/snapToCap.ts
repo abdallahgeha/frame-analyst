@@ -1,14 +1,14 @@
-import { LineType } from "~/types/shapes.types";
+import type { LineType, RectType } from "~/types/shapes.types";
 
 export default function snapToCap(
   lines: LineType[],
-  line: LineType,
+  cappedObj: LineType | RectType,
   snapX: number,
   snapY: number,
   CAP_SNAP_THRESHOLD: number,
 ) {
   const otherCircles = lines
-    .filter((l) => l.id !== line.id)
+    .filter((l) => l.id !== cappedObj.id)
     .map((l) => {
       return {
         capStartX: l.points[0]!,

@@ -1,9 +1,12 @@
-import { GRID_SIZE, xOffset, yOffset } from "~/constants";
-import { coordinate } from "~/types/shapes.types";
+import { xOffset, yOffset } from "~/constants";
+import type { coordinate } from "~/types/shapes.types";
 
-export default function toCoordinate(coordinate: coordinate): coordinate {
+export default function toCoordinate(
+  coordinate: coordinate,
+  gridSize: number,
+): coordinate {
   return {
-    x: Number((coordinate.x - xOffset * GRID_SIZE).toFixed(2)),
-    y: Number((yOffset * GRID_SIZE - coordinate.y).toFixed(2)),
+    x: Number((coordinate.x - xOffset * gridSize).toFixed(2)),
+    y: Number((yOffset * gridSize - coordinate.y).toFixed(2)),
   };
 }

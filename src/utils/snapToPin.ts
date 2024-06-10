@@ -1,4 +1,4 @@
-import { pinWithId } from "~/types/shapes.types";
+import type { pinWithId } from "~/types/shapes.types";
 
 export default function snapToPin(
   pins: pinWithId[],
