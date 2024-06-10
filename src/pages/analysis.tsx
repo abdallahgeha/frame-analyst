@@ -2,7 +2,12 @@ import dynamic from "next/dynamic";
 import { useEffect, useState, useRef } from "react";
 import { set } from "zod";
 import ControlBar from "~/components/control/controlBar";
-import { LineType, RectType, pinWithId } from "~/types/shapes.types";
+import {
+  LineType,
+  RectType,
+  coordinate,
+  pinWithId,
+} from "~/types/shapes.types";
 
 const NoSSRComponent = dynamic(() => import("../components/drawingCanvas"), {
   ssr: false,
@@ -15,7 +20,9 @@ export default function TestsPage() {
   const [lines, setLines] = useState<LineType[]>([]);
   const [pins, setPins] = useState<pinWithId[]>([]);
   const [rects, setRects] = useState<RectType[]>([]);
-
+  const [currentPosition, setCurrentPosition] = useState<coordinate | null>(
+    null,
+  );
   const unselect = () => {
     const unselectedLines = lines.map((line) => {
       return { ...line, active: false };
@@ -83,15 +90,17 @@ export default function TestsPage() {
   }, []);
 
   return (
-    <div className="h-screen w-full bg-slate-50">
+    <div className="h-screen w-full bg-gray-700">
       <ControlBar
+        currentPosition={currentPosition}
         setType={setType}
         deleteLines={deleteLines}
         activeType={type}
+        clear={clear}
       />
       <div
         className="bg-slate-800"
-        style={{ width: `calc(100vw - 40px)`, height: `calc(100vh - 60px)` }}
+        style={{ width: `calc(100vw)`, height: `calc(100vh - 60px)` }}
       >
         <NoSSRComponent
           type={type}
@@ -101,7 +110,13 @@ export default function TestsPage() {
           setRects={setRects}
           setLines={setLines}
           setPins={setPins}
+          setCurrentPosition={setCurrentPosition}
         />
+      </div>
+      <div className="flex bg-gray-700 px-4 text-white">
+        <p className="text-sm w-24">Lines: {lines.length}</p>
+        <p className="text-sm w-24">Pins: {pins.length}</p>
+        <p className="text-sm w-24">Rectangles: {rects.length}</p>
       </div>
     </div>
   );

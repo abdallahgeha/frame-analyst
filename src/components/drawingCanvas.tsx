@@ -80,6 +80,7 @@ const DrawingCanvas = ({
   setLines,
   setPins,
   setRects,
+  setCurrentPosition,
 }: {
   type: string;
   lines: LineType[];
@@ -88,6 +89,7 @@ const DrawingCanvas = ({
   setLines: Dispatch<SetStateAction<LineType[]>>;
   setPins: Dispatch<SetStateAction<pinWithId[]>>;
   setRects: Dispatch<SetStateAction<RectType[]>>;
+  setCurrentPosition: Dispatch<SetStateAction<coordinate | null>>;
 }) => {
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
@@ -132,7 +134,7 @@ const DrawingCanvas = ({
     });
 
     setPins(selected);
-  }
+  };
 
   const selectRects = (start: coordinate, end: coordinate) => {
     const selected = rects.map((rect) => {
@@ -155,7 +157,7 @@ const DrawingCanvas = ({
     });
 
     setRects(selected);
-  }
+  };
 
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
@@ -168,7 +170,7 @@ const DrawingCanvas = ({
       if (type == "pin") {
         setPins((pins) => [
           ...pins,
-          { ...clickLocation, id: "pin" + pins.length, active: false},
+          { ...clickLocation, id: "pin" + pins.length, active: false },
         ]);
         return;
       }
@@ -239,9 +241,16 @@ const DrawingCanvas = ({
     const stage = e.target.getStage();
     const position = stage?.getPointerPosition();
 
-    if (!!position && !!stage && activePointStart) {
+    const container = e.target.getStage()!.container();
+    container.style.cursor = "crosshair";
+
+    if (!!position && !!stage) {
       const { snapX, snapY } = snap(position, lines, pins);
-      setActivePointEnd({ x: snapX, y: snapY });
+      setCurrentPosition(toCoordinate({ x: snapX, y: snapY }));
+
+      if (activePointStart) {
+        setActivePointEnd({ x: snapX, y: snapY });
+      }
     }
   };
 
@@ -339,7 +348,7 @@ const DrawingCanvas = ({
               height={30}
               fill="green"
               cornerRadius={[10, 0, 0, 10]}
-              opacity={0.7}
+              opacity={0.5}
             />
             <Rect
               x={80}
@@ -347,10 +356,10 @@ const DrawingCanvas = ({
               height={30}
               fill="red"
               cornerRadius={[0, 10, 10, 0]}
-              opacity={0.7}
+              opacity={0.5}
             />
             <Text
-              text={toCoordinate(activePointEnd).x}
+              text={toCoordinate(activePointEnd).x.toString()}
               fontSize={16}
               fill="white"
               align="center"
@@ -360,7 +369,7 @@ const DrawingCanvas = ({
             />
             <Text
               x={80}
-              text={toCoordinate(activePointEnd).y}
+              text={toCoordinate(activePointEnd).y.toString()}
               fontSize={16}
               fill="#FFFFFF"
               align="center"

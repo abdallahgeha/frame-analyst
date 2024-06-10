@@ -1,4 +1,4 @@
-export const CANVAS_WIDTH = window.innerWidth - 40;
+export const CANVAS_WIDTH = window.innerWidth;
 export const CANVAS_HEIGHT = window.innerHeight - 60;
 
 export const CAP_SNAP = true;
