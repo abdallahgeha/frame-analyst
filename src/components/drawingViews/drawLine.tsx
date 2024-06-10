@@ -1,11 +1,5 @@
-import type {
-  DrawType,
-  LineType,
-  ObjectsType,
-  coordinate,
-} from "~/types/shapes.types";
+import type { DrawType, LineType, coordinate } from "~/types/shapes.types";
 import CappedLine from "../cappedLine/cappedLine";
-import type { Dispatch, SetStateAction } from "react";
 
 const DrawLine = ({
   type,

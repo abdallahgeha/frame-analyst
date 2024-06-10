@@ -1,9 +1,9 @@
-import { useContext, type Dispatch, type SetStateAction } from "react";
+import { useContext } from "react";
 import { Circle, Line } from "react-konva";
 import { ObjectsContext } from "~/contexts/objectsContexts";
 import useSnap from "~/hooks/useSnap";
 import type { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
-import type { LineType, ObjectsType } from "~/types/shapes.types";
+import type { LineType } from "~/types/shapes.types";
 
 const CappedLine = ({ line }: { line: LineType }) => {
   const [_, setObjects] = useContext(ObjectsContext);

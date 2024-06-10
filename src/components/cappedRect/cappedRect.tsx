@@ -1,9 +1,9 @@
-import { useContext, type Dispatch, type SetStateAction } from "react";
+import { useContext } from "react";
 import { Circle, Rect } from "react-konva";
 import { ObjectsContext } from "~/contexts/objectsContexts";
 import useSnap from "~/hooks/useSnap";
 import type { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
-import type { ObjectsType, RectType } from "~/types/shapes.types";
+import type { RectType } from "~/types/shapes.types";
 
 const CappedRect = ({ rect }: { rect: RectType }) => {
   const [_, setObjects] = useContext(ObjectsContext);
