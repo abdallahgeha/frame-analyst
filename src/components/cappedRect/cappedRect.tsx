@@ -24,6 +24,19 @@ const CappedRect = ({ rect }: { rect: RectType }) => {
     } else if (e.target.name() === "capEnd") {
       rect.points[2] = snapX;
       rect.points[3] = snapY;
+    } else if (e.target.name() === "capOtherStart") {
+      rect.points[0] = snapX;
+      rect.points[3] = snapY;
+    } else if (e.target.name() === "capOtherEnd") {
+      rect.points[2] = snapX;
+      rect.points[1] = snapY;
+    } else if (e.target.name() === "rectEdge") {
+      const diffX = snapX - rect.points[0];
+      const diffY = snapY - rect.points[1];
+      rect.points[0] = snapX;
+      rect.points[1] = snapY;
+      rect.points[2] = rect.points[2] + diffX;
+      rect.points[3] = rect.points[3] + diffY;
     }
 
     setObjects((prevObjects) =>
@@ -33,14 +46,6 @@ const CappedRect = ({ rect }: { rect: RectType }) => {
           : prevObject,
       ),
     );
-
-    // setRects((prevLines) =>
-    //   prevLines.map((prevLine) =>
-    //     prevLine.id === rect.id
-    //       ? { ...prevLine, points: rect.points }
-    //       : prevLine,
-    //   ),
-    // );
   };
 
   const handleMouseEnter = (e: KonvaMouse) => {
@@ -61,7 +66,6 @@ const CappedRect = ({ rect }: { rect: RectType }) => {
         width={rect.points[2] - rect.points[0]}
         height={rect.points[3] - rect.points[1]}
         fill={rect.active ? "lightblue" : "lightgray"}
-        draggable
         opacity={0.2}
         onDragMove={handleDragMove}
         onMouseEnter={handleMouseEnter}
@@ -74,6 +78,7 @@ const CappedRect = ({ rect }: { rect: RectType }) => {
         width={rect.points[2] - rect.points[0]}
         height={rect.points[3] - rect.points[1]}
         draggable
+        name="rectEdge"
         onDragMove={handleDragMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
