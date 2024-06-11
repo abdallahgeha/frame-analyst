@@ -1,6 +1,7 @@
 import { useContext } from "react";
+import { ObjectsContext } from "~/contexts/objectsContexts";
 import { TypeContext } from "~/contexts/typeContext";
-import { useAnalysisPage } from "~/hooks/useAnalysisPage.hook";
+import { EventActions } from "~/hooks/useHistState";
 import type { DrawType, coordinate } from "~/types/shapes.types";
 import { cn } from "~/utils/cn";
 
@@ -11,12 +12,12 @@ const controlButtons: { title: string; type: DrawType }[] = [
   { title: "Pin", type: "pin" },
   { title: "Rectangle", type: "rect" },
   { title: "Delete", type: "delete" },
+  { title: "Undo", type: "undo" },
+  { title: "Redo", type: "redo" },
   { title: "Clear", type: "clear" },
 ];
 
 const ControlBar = ({ currentPosition }: { currentPosition?: coordinate }) => {
-  const { deleteSelected, clear } = useAnalysisPage();
-
   return (
     <nav className="ml-32 mr-auto flex max-w-7xl items-center bg-gray-700 py-1">
       <div className="flex">
@@ -25,8 +26,6 @@ const ControlBar = ({ currentPosition }: { currentPosition?: coordinate }) => {
             key={button.title}
             title={button.title}
             buttonType={button.type}
-            deleteLines={deleteSelected}
-            clear={clear}
           />
         ))}
       </div>
@@ -40,25 +39,46 @@ const ControlBar = ({ currentPosition }: { currentPosition?: coordinate }) => {
 const ControlButton = ({
   title,
   buttonType,
-  deleteLines,
-  clear,
 }: {
   title: string;
   buttonType: DrawType;
-  deleteLines: () => void;
-  clear: () => void;
 }) => {
   const [activeType, setType] = useContext(TypeContext);
+  const { undo, redo, call } = useContext(ObjectsContext);
+
+  const deleteSelected = () => {
+    call({ action: EventActions.DELETE, payload: null });
+  };
+
+  const clear = () => {
+    call({ action: EventActions.CLEAR, payload: null });
+  };
 
   const handleClick = () => {
-    if (buttonType === "delete") {
-      deleteLines();
-      return;
-    } else if (buttonType === "clear") {
-      clear();
-    } else {
-      setType(buttonType);
+    switch (buttonType) {
+      case "undo":
+        undo();
+        break;
+      case "redo":
+        redo();
+        break;
+      case "delete":
+        deleteSelected();
+        break;
+      case "clear":
+        clear();
+        break;
+      default:
+        setType(buttonType);
+        break;
     }
+    // if (buttonType === "delete") {
+    //   deleteLines();
+    // } else if (buttonType === "clear") {
+    //   clear();
+    // } else {
+    //   setType(buttonType);
+    // }
   };
 
   const active = activeType === buttonType;

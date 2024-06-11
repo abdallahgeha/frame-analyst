@@ -17,6 +17,8 @@ export const ActiveTypes = {
   rect: "rect",
   delete: "delete",
   clear: "clear",
+  undo: "undo",
+  redo: "redo",
 } as const;
 
 export type DrawType = keyof typeof ActiveTypes;

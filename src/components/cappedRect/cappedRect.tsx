@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { Circle, Rect } from "react-konva";
 import { ObjectsContext } from "~/contexts/objectsContexts";
+import { EventActions } from "~/hooks/useHistState";
 import useSnap from "~/hooks/useSnap";
 import type { KonvaDrag, KonvaMouse } from "~/types/konvaEvents.types";
 import type { RectType } from "~/types/shapes.types";
 
 const CappedRect = ({ rect }: { rect: RectType }) => {
-  const [_, setObjects] = useContext(ObjectsContext);
+  const { call } = useContext(ObjectsContext);
   const snap = useSnap();
 
   const handleDragMove = (e: KonvaDrag) => {
@@ -39,13 +40,10 @@ const CappedRect = ({ rect }: { rect: RectType }) => {
       rect.points[3] = rect.points[3] + diffY;
     }
 
-    setObjects((prevObjects) =>
-      prevObjects.map((prevObject) =>
-        prevObject.id === rect.id
-          ? { ...rect, points: rect.points }
-          : prevObject,
-      ),
-    );
+    call({
+      action: EventActions.EDIT,
+      payload: { ...rect, points: rect.points },
+    });
   };
 
   const handleMouseEnter = (e: KonvaMouse) => {

@@ -15,7 +15,7 @@ import type {
   coordinate,
   pinWithId,
 } from "~/types/shapes.types";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, THROTTLE_DELAY } from "~/constants";
+import { THROTTLE_DELAY } from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
 import toCoordinate from "~/utils/toCoordnate";
 import Pin from "./pin/pin";
@@ -29,6 +29,7 @@ import { ObjectsContext } from "~/contexts/objectsContexts";
 import useSnap from "~/hooks/useSnap";
 import { SettingsContext } from "~/contexts/settingsContext";
 import useCreateObjects from "~/hooks/useCreateObjects";
+import { useWindowSize } from "~/hooks/useWindowSize";
 
 const DrawingCanvas = ({
   setCurrentPosition,
@@ -36,9 +37,10 @@ const DrawingCanvas = ({
   setCurrentPosition: Dispatch<SetStateAction<coordinate | undefined>>;
 }) => {
   const snap = useSnap();
+  const windowSize = useWindowSize();
   const [settings] = useContext(SettingsContext);
   const [type] = useContext(TypeContext);
-  const [objects] = useContext(ObjectsContext);
+  const { state: objects } = useContext(ObjectsContext);
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
   );
@@ -127,10 +129,11 @@ const DrawingCanvas = ({
     (obj) => obj.itemType === "rect",
   ) as RectType[];
 
+  if (!windowSize.width || !windowSize.height) return null;
   return (
     <Stage
-      width={CANVAS_WIDTH}
-      height={CANVAS_HEIGHT}
+      width={windowSize.width}
+      height={windowSize.height - 60}
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}
     >

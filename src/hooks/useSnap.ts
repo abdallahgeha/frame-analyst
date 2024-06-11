@@ -12,7 +12,7 @@ import snapToGrid from "~/utils/snapToGrid";
 import snapToPin from "~/utils/snapToPin";
 
 const useSnap = () => {
-  const [objects] = useContext(ObjectsContext);
+  const { state: objects } = useContext(ObjectsContext);
   const [settings] = useContext(SettingsContext);
 
   const snap = (position: coordinate) => {

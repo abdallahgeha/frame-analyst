@@ -7,10 +7,11 @@ import type {
   RectType,
   pinWithId,
 } from "~/types/shapes.types";
+import { EventActions } from "./useHistState";
 
 export const useAnalysisPage = () => {
   const pageRef = useRef<KeyActions>();
-  const [objects, setObjects] = useContext(ObjectsContext);
+  const { state: objects, call } = useContext(ObjectsContext);
   const [type, setType] = useContext(TypeContext);
 
   const unselect = () => {
@@ -18,17 +19,26 @@ export const useAnalysisPage = () => {
       return { ...obj, active: false };
     });
 
-    setObjects(unselectedObjects);
+    call({
+      action: EventActions.SET_INACTIVE,
+      payload: unselectedObjects.map((obj) => obj.id),
+    });
   };
 
   const deleteSelected = () => {
     const undeletedObjects = objects.filter((obj) => obj.active === false);
 
-    setObjects(undeletedObjects);
+    call({
+      action: EventActions.DELETE,
+      payload: null,
+    });
   };
 
   const clear = () => {
-    setObjects([]);
+    call({
+      action: EventActions.CLEAR,
+      payload: null,
+    });
   };
 
   pageRef.current = (event: KeyboardEvent) => {

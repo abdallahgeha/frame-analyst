@@ -1,5 +1,6 @@
 import { Layer, Line } from "react-konva";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, xOffset, yOffset } from "~/constants";
+import { xOffset, yOffset } from "~/constants";
+import { useWindowSize } from "~/hooks/useWindowSize";
 
 const GridLayer = ({
   gridSize,
@@ -8,6 +9,12 @@ const GridLayer = ({
   gridSize: number;
   isGridOn: boolean;
 }) => {
+  const windowSize = useWindowSize();
+
+  if (!windowSize.width || !windowSize.height) return null;
+  const CANVAS_WIDTH = windowSize.width;
+  const CANVAS_HEIGHT = windowSize.height - 60;
+
   if (!isGridOn) return null;
 
   // Calculate the number of grid squares required based on the canvas size

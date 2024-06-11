@@ -22,9 +22,16 @@ export default function TestsPage() {
         <NoSSRComponent setCurrentPosition={setCurrentPosition} />
       </div>
       <div className="flex bg-gray-700 px-4 text-white">
-        <p className="w-24 text-sm">Lines: {lines.length}</p>
-        <p className="w-24 text-sm">Pins: {pins.length}</p>
-        <p className="w-24 text-sm">Rectangles: {rects.length}</p>
+        <p className="w-24 text-sm">
+          Lines: {lines.length} ({lines.filter((line) => line.active).length})
+        </p>
+        <p className="w-24 text-sm">
+          Pins: {pins.length} ({pins.filter((pin) => pin.active).length})
+        </p>
+        <p className="w-24 text-sm">
+          Rectangles: {rects.length} (
+          {rects.filter((rect) => rect.active).length})
+        </p>
       </div>
     </div>
   );

@@ -6,9 +6,10 @@ import type {
   coordinate,
   pinWithId,
 } from "~/types/shapes.types";
+import { EventActions } from "./useHistState";
 
 const useCreateObjects = () => {
-  const [objects, setObjects] = useContext(ObjectsContext);
+  const { state: objects, call } = useContext(ObjectsContext);
 
   const selectObjects = (start: coordinate, end: coordinate) => {
     const selected = objects.map((obj) => {
@@ -45,18 +46,24 @@ const useCreateObjects = () => {
       }
     });
 
-    setObjects(selected);
+    const activeObjects = selected.filter((obj) => obj.active);
+    if (activeObjects.length !== 0) {
+      call({
+        action: EventActions.SET_ACTIVE,
+        payload: activeObjects.map((obj) => obj.id),
+      });
+    }
   };
 
   const createLine = (start: coordinate, end: coordinate | null) => {
     const newLine: LineType = {
       id: crypto.randomUUID(),
-      points: [start.x, start.y, end!.x, end!.y],
+      points: [start.x, start.y, end?.x ?? start.x, end?.y ?? start.y],
       active: false,
       itemType: "line",
     };
 
-    setObjects([...objects, newLine]);
+    call({ action: EventActions.CREATE, payload: newLine });
   };
 
   const createPin = (clickLocation: coordinate) => {
@@ -67,15 +74,15 @@ const useCreateObjects = () => {
       itemType: "pin",
     };
 
-    setObjects([...objects, newPin]);
+    call({ action: EventActions.CREATE, payload: newPin });
   };
 
   const createRect = (start: coordinate, end: coordinate | null) => {
     const points: [number, number, number, number] = [
       start.x,
       start.y,
-      end!.x,
-      end!.y,
+      end?.x ?? start.x,
+      end?.y ?? start.y,
     ];
     const newRect: RectType = {
       id: crypto.randomUUID(),
@@ -84,7 +91,7 @@ const useCreateObjects = () => {
       itemType: "rect",
     };
 
-    setObjects([...objects, newRect]);
+    call({ action: EventActions.CREATE, payload: newRect });
   };
 
   return { createLine, createPin, createRect, selectObjects };
