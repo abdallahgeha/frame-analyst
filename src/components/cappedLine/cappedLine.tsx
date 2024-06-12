@@ -67,17 +67,19 @@ const CappedLine = ({ line }: { line: LineType }) => {
 
     const { snapX, snapY } = snap({ x, y });
 
+    const draggedLine = { ...line, points: [...line.points] };
+
     if (e.target.name() === "capStart") {
-      line.points[0] = snapX;
-      line.points[1] = snapY;
+      draggedLine.points[0] = snapX;
+      draggedLine.points[1] = snapY;
     } else if (e.target.name() === "capEnd") {
-      line.points[2] = snapX;
-      line.points[3] = snapY;
+      draggedLine.points[2] = snapX;
+      draggedLine.points[3] = snapY;
     }
 
     call({
       action: EventActions.EDIT,
-      payload: { ...line, points: line.points },
+      payload: draggedLine,
     });
 
     setTempPoint(null);
@@ -128,7 +130,12 @@ const CappedLine = ({ line }: { line: LineType }) => {
         />
       )}
       {tempLine && (
-        <Line points={tempLine.points} stroke={"red"} strokeWidth={2} opacity={0.5} />
+        <Line
+          points={tempLine.points}
+          stroke={"red"}
+          strokeWidth={2}
+          opacity={0.5}
+        />
       )}
     </>
   );

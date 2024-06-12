@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ObjectsType } from "~/types/shapes.types";
 
 export enum EventActions {
@@ -21,14 +21,16 @@ const useHistState = (maxHistory: number) => {
   const [undoneEvents, setUndoneEvents] = useState<EventType[]>([]);
 
   const call = (event: EventType) => {
+    console.log({ event });
     setEvents((prevEvents) => {
       const newEvents = [...prevEvents, event];
       if (newEvents.length > maxHistory) {
         const oldestAction = newEvents.shift();
         if (oldestAction) {
-          setBaseState(buildState([oldestAction], baseState));
+          setBaseState(buildState([oldestAction]));
         }
       }
+      console.log({ newEvents });
       return newEvents;
     });
   };
@@ -59,43 +61,42 @@ const useHistState = (maxHistory: number) => {
     });
   };
 
-  const buildState = (
-    eventsToBuild: EventType[],
-    initialState: ObjectsType[] = [],
-  ): ObjectsType[] => {
-    console.log(eventsToBuild);
-    return eventsToBuild.reduce((acc: ObjectsType[], event: EventType) => {
-      switch (event.action) {
-        case EventActions.CREATE:
-          return [...acc, event.payload as ObjectsType];
-        case EventActions.EDIT:
-          return acc.map((obj) =>
-            obj.id === (event.payload as ObjectsType).id
-              ? (event.payload as ObjectsType)
-              : obj,
-          );
-        case EventActions.CLEAR:
-          return [];
-        case EventActions.SET_ACTIVE:
-          const activeIds = new Set(event.payload as string[]);
-          return acc.map((obj) => ({
-            ...obj,
-            active: activeIds.has(obj.id),
-          }));
-        case EventActions.SET_INACTIVE:
-          return acc.map((obj) => ({
-            ...obj,
-            active: false,
-          }));
-        case EventActions.DELETE:
-          return acc.filter((obj) => !obj.active);
-        default:
-          return acc;
-      }
-    }, initialState);
-  };
+  const buildState = useCallback(
+    (eventsToBuild: EventType[]): ObjectsType[] => {
+      return eventsToBuild.reduce((acc: ObjectsType[], event: EventType) => {
+        switch (event.action) {
+          case EventActions.CREATE:
+            return [...acc, event.payload as ObjectsType];
+          case EventActions.EDIT:
+            return acc.map((obj) =>
+              obj.id === (event.payload as ObjectsType).id
+                ? (event.payload as ObjectsType)
+                : obj,
+            );
+          case EventActions.CLEAR:
+            return [];
+          case EventActions.SET_ACTIVE:
+            const activeIds = new Set(event.payload as string[]);
+            return acc.map((obj) => ({
+              ...obj,
+              active: activeIds.has(obj.id),
+            }));
+          case EventActions.SET_INACTIVE:
+            return acc.map((obj) => ({
+              ...obj,
+              active: false,
+            }));
+          case EventActions.DELETE:
+            return acc.filter((obj) => !obj.active);
+          default:
+            return acc;
+        }
+      }, baseState);
+    },
+    [baseState, events],
+  );
 
-  const state = buildState(events, baseState);
+  const state = buildState(events);
 
   return {
     call,

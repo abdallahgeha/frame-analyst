@@ -12,19 +12,18 @@ const useCreateObjects = () => {
   const { state: objects, call } = useContext(ObjectsContext);
 
   const selectObjects = (start: coordinate, end: coordinate) => {
+    const xMin = Math.min(start.x, end.x);
+    const xMax = Math.max(start.x, end.x);
+    const yMin = Math.min(start.y, end.y);
+    const yMax = Math.max(start.y, end.y);
+
     const selected = objects.map((obj) => {
       if ("points" in obj) {
         const [x1, y1, x2, y2] = obj.points;
-        const xMin = Math.min(start.x, end.x);
-        const xMax = Math.max(start.x, end.x);
-        const yMin = Math.min(start.y, end.y);
-        const yMax = Math.max(start.y, end.y);
 
         if (
           (x1 >= xMin && x1 <= xMax && y1 >= yMin && y1 <= yMax) ||
-          (x2 >= xMin && x2 <= xMax && y2 >= yMin && y2 <= yMax) ||
-          (x1 >= xMin && x1 <= xMax && y2 >= yMin && y2 <= yMax) ||
-          (x2 >= xMin && x2 <= xMax && y1 >= yMin && y1 <= yMax)
+          (x2 >= xMin && x2 <= xMax && y2 >= yMin && y2 <= yMax)
         ) {
           return { ...obj, active: true };
         } else {
@@ -33,10 +32,6 @@ const useCreateObjects = () => {
       } else {
         const x = obj.x;
         const y = obj.y;
-        const xMin = Math.min(start.x, end.x);
-        const xMax = Math.max(start.x, end.x);
-        const yMin = Math.min(start.y, end.y);
-        const yMax = Math.max(start.y, end.y);
 
         if (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
           return { ...obj, active: true };
@@ -47,12 +42,11 @@ const useCreateObjects = () => {
     });
 
     const activeObjects = selected.filter((obj) => obj.active);
-    if (activeObjects.length !== 0) {
-      call({
-        action: EventActions.SET_ACTIVE,
-        payload: activeObjects.map((obj) => obj.id),
-      });
-    }
+
+    call({
+      action: EventActions.SET_ACTIVE,
+      payload: activeObjects.map((obj) => obj.id),
+    });
   };
 
   const createLine = (start: coordinate, end: coordinate | null) => {
