@@ -18,7 +18,7 @@ const useCreateObjects = () => {
     const yMax = Math.max(start.y, end.y);
 
     const selected = objects.map((obj) => {
-      if ("points" in obj) {
+      if (obj.itemType === "line" || obj.itemType === "rect") {
         const [x1, y1, x2, y2] = obj.points;
 
         if (
@@ -36,8 +36,8 @@ const useCreateObjects = () => {
           return { ...obj, active: false };
         }
       } else {
-        const x = obj.x;
-        const y = obj.y;
+        const x = obj.points[0];
+        const y = obj.points[1];
 
         if (x >= xMin && x <= xMax && y >= yMin && y <= yMax) {
           return { ...obj, active: true };
@@ -68,7 +68,7 @@ const useCreateObjects = () => {
 
   const createPin = (clickLocation: coordinate) => {
     const newPin: pinWithId = {
-      ...clickLocation,
+      points: [clickLocation.x, clickLocation.y],
       id: crypto.randomUUID(),
       active: false,
       itemType: "pin",

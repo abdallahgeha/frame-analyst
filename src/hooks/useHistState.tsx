@@ -28,7 +28,6 @@ export type SetActiveInactiveEventType = {
   payload: string[];
 };
 
-// Combine the specific event types into a union type
 export type EventType =
   | CreateEditEventType
   | DeleteClearEventType

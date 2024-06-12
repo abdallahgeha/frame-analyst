@@ -16,8 +16,8 @@ const Pin = ({ pin }: { pin: pinWithId }) => {
   return (
     <Circle
       id={pin.id}
-      x={pin.x}
-      y={pin.y}
+      x={pin.points[0]}
+      y={pin.points[1]}
       radius={6}
       fill="red"
       name="pin"

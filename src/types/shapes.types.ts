@@ -36,7 +36,8 @@ export type RectType = {
   active: boolean;
   itemType: "rect";
 };
-export type pinWithId = coordinate & {
+export type pinWithId = {
+  points: [number, number];
   id: string;
   active: boolean;
   itemType: "pin";

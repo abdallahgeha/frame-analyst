@@ -8,12 +8,12 @@ export default function snapToPin(
 ) {
   pins.forEach((pin) => {
     const distanceToPin = Math.sqrt(
-      (pin.x - snapX) ** 2 + (pin.y - snapY) ** 2,
+      (pin.points[0] - snapX) ** 2 + (pin.points[1] - snapY) ** 2,
     );
 
     if (distanceToPin < PIN_SNAP_THRESHOLD) {
-      snapX = pin.x;
-      snapY = pin.y;
+      snapX = pin.points[0];
+      snapY = pin.points[1];
     }
   });
 
