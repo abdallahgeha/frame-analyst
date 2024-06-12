@@ -7,3 +7,25 @@
     @apply bg-gray-700;
   }
 }
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .thin-scrollbar::-webkit-scrollbar {
+    scrollbar-color: rgb(55, 65, 81) rgb(156 163 175);
+    scrollbar-width: thin;
+  }
+
+  .thin-scrollbar {
+    scrollbar-color: rgb(55, 65, 81) rgb(156 163 175);
+    scrollbar-width: thin;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}

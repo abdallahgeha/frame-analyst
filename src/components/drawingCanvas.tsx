@@ -132,7 +132,7 @@ const DrawingCanvas = ({
   if (!windowSize.width || !windowSize.height) return null;
   return (
     <Stage
-      width={windowSize.width}
+      width={windowSize.width - 240}
       height={windowSize.height - 60}
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}

@@ -26,6 +26,12 @@ const useCreateObjects = () => {
           (x2 >= xMin && x2 <= xMax && y2 >= yMin && y2 <= yMax)
         ) {
           return { ...obj, active: true };
+        } else if (
+          obj.itemType === "rect" &&
+          ((x1 >= xMin && x1 <= xMax && y2 >= yMin && y2 <= yMax) ||
+            (x2 >= xMin && x2 <= xMax && y1 >= yMin && y1 <= yMax))
+        ) {
+          return { ...obj, active: true };
         } else {
           return { ...obj, active: false };
         }

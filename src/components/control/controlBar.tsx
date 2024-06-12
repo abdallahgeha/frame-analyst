@@ -44,7 +44,7 @@ const ControlButton = ({
   buttonType: DrawType;
 }) => {
   const [activeType, setType] = useContext(TypeContext);
-  const { undo, redo, call } = useContext(ObjectsContext);
+  const { undo, redo, call, canRedo, canUndo } = useContext(ObjectsContext);
 
   const deleteSelected = () => {
     call({ action: EventActions.DELETE, payload: null });
@@ -57,10 +57,14 @@ const ControlButton = ({
   const handleClick = () => {
     switch (buttonType) {
       case "undo":
-        undo();
+        if (canUndo) {
+          undo();
+        }
         break;
       case "redo":
-        redo();
+        if (canRedo) {
+          redo();
+        }
         break;
       case "delete":
         deleteSelected();
@@ -72,13 +76,6 @@ const ControlButton = ({
         setType(buttonType);
         break;
     }
-    // if (buttonType === "delete") {
-    //   deleteLines();
-    // } else if (buttonType === "clear") {
-    //   clear();
-    // } else {
-    //   setType(buttonType);
-    // }
   };
 
   const active = activeType === buttonType;
@@ -88,9 +85,15 @@ const ControlButton = ({
       className={cn(
         "flex-0 mr-1 flex h-8 w-24 items-center justify-center rounded-md bg-gray-500 text-white hover:bg-gray-200 hover:text-gray-900",
         active && "bg-gray-200 text-gray-900",
+        buttonType === "undo" && !canUndo && "opacity-50",
+        buttonType === "redo" && !canRedo && "opacity-50",
       )}
       title={title}
       onClick={handleClick}
+      disabled={
+        (buttonType === "undo" && !canUndo) ||
+        (buttonType === "redo" && !canRedo)
+      }
     >
       {title}
     </button>

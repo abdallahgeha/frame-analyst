@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import ControlBar from "~/components/control/controlBar";
+import History from "~/components/history/history";
 import { useAnalysisPage } from "~/hooks/useAnalysisPage.hook";
 import type { coordinate } from "~/types/shapes.types";
 
@@ -15,11 +16,14 @@ export default function TestsPage() {
   return (
     <div className="h-screen w-full bg-gray-700">
       <ControlBar currentPosition={currentPosition} />
-      <div
-        className="bg-slate-800"
-        style={{ width: `calc(100vw)`, height: `calc(100vh - 60px)` }}
-      >
-        <NoSSRComponent setCurrentPosition={setCurrentPosition} />
+      <div className="flex">
+        <div
+          className="bg-slate-800"
+          style={{ width: `calc(100vw)`, height: `calc(100vh - 64px)` }}
+        >
+          <NoSSRComponent setCurrentPosition={setCurrentPosition} />
+        </div>
+        <History />
       </div>
       <div className="flex bg-gray-700 px-4 text-white">
         <p className="w-24 text-sm">

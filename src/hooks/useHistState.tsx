@@ -10,27 +10,75 @@ export enum EventActions {
   SET_INACTIVE = "SET_INACTIVE",
 }
 
-export type EventType = {
-  action: EventActions;
-  payload: ObjectsType | string[] | null;
+export type CreateEditEventType = {
+  id: string;
+  action: EventActions.CREATE | EventActions.EDIT;
+  payload: ObjectsType;
 };
 
+export type DeleteClearEventType = {
+  id: string;
+  action: EventActions.DELETE | EventActions.CLEAR;
+  payload: null;
+};
+
+export type SetActiveInactiveEventType = {
+  id: string;
+  action: EventActions.SET_ACTIVE | EventActions.SET_INACTIVE;
+  payload: string[];
+};
+
+// Combine the specific event types into a union type
+export type EventType =
+  | CreateEditEventType
+  | DeleteClearEventType
+  | SetActiveInactiveEventType;
+
 const useHistState = (maxHistory: number) => {
+  const [objects, setObjects] = useState<ObjectsType[]>([]);
   const [baseState, setBaseState] = useState<ObjectsType[]>([]);
   const [events, setEvents] = useState<EventType[]>([]);
   const [undoneEvents, setUndoneEvents] = useState<EventType[]>([]);
 
-  const call = (event: EventType) => {
-    console.log({ event });
+  const activate = (ids: string[]) => {
+    setObjects((prevObjects) =>
+      prevObjects.map((obj) => ({
+        ...obj,
+        active: ids.includes(obj.id),
+      })),
+    );
+  };
+
+  const inactivate = () => {
+    setObjects((prevObjects) =>
+      prevObjects.map((obj) => ({
+        ...obj,
+        active: false,
+      })),
+    );
+  };
+
+  const call = (event: Omit<EventType, "id">) => {
+    if (event.action === EventActions.SET_ACTIVE) {
+      activate(event.payload as string[]);
+      return;
+    }
+    if (event.action === EventActions.SET_INACTIVE) {
+      inactivate();
+      return;
+    }
+
     setEvents((prevEvents) => {
-      const newEvents = [...prevEvents, event];
+      const newEvents = [
+        ...prevEvents,
+        { ...event, id: crypto.randomUUID() } as EventType,
+      ];
       if (newEvents.length > maxHistory) {
-        const oldestAction = newEvents.shift();
+        const oldestAction = newEvents.shift() as EventType;
         if (oldestAction) {
           setBaseState(buildState([oldestAction]));
         }
       }
-      console.log({ newEvents });
       return newEvents;
     });
   };
@@ -75,19 +123,11 @@ const useHistState = (maxHistory: number) => {
             );
           case EventActions.CLEAR:
             return [];
-          case EventActions.SET_ACTIVE:
-            const activeIds = new Set(event.payload as string[]);
-            return acc.map((obj) => ({
-              ...obj,
-              active: activeIds.has(obj.id),
-            }));
-          case EventActions.SET_INACTIVE:
-            return acc.map((obj) => ({
-              ...obj,
-              active: false,
-            }));
           case EventActions.DELETE:
-            return acc.filter((obj) => !obj.active);
+            const activeObjects = objects
+              .filter((obj) => obj.active)
+              .map((obj) => obj.id);
+            return acc.filter((obj) => !activeObjects.includes(obj.id));
           default:
             return acc;
         }
@@ -96,13 +136,21 @@ const useHistState = (maxHistory: number) => {
     [baseState, events],
   );
 
-  const state = buildState(events);
+  useEffect(() => {
+    setObjects(buildState(events));
+  }, [events, buildState]);
+
+  const state = objects;
 
   return {
+    events,
+    setEvents,
     call,
     undo,
     redo,
     state,
+    canUndo: events.length > 0,
+    canRedo: undoneEvents.length > 0,
   };
 };
 

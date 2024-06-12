@@ -9,15 +9,23 @@ import useHistState, { type EventType } from "~/hooks/useHistState";
 import type { ObjectsType } from "~/types/shapes.types";
 
 export const ObjectsContext = createContext<{
-  call: (event: EventType) => void;
+  call: (event: Omit<EventType, "id">) => void;
   undo: () => void;
   redo: () => void;
   state: ObjectsType[];
+  events: EventType[];
+  setEvents: Dispatch<SetStateAction<EventType[]>>;
+  canRedo: boolean;
+  canUndo: boolean;
 }>({
   call: () => {},
   undo: () => {},
   redo: () => {},
   state: [],
+  events: [],
+  setEvents: () => {},
+  canRedo: false,
+  canUndo: false,
 });
 
 export const ObjectsProvider = ({
@@ -25,11 +33,13 @@ export const ObjectsProvider = ({
 }: {
   children: React.ReactElement;
 }): ReactElement => {
-  //   const [objects, setObjects] = useState<ObjectsType[]>([]);
-  const { call, redo, undo, state } = useHistState(10);
+  const { call, redo, undo, state, events, setEvents, canRedo, canUndo } =
+    useHistState(20);
 
   return (
-    <ObjectsContext.Provider value={{ call, redo, undo, state }}>
+    <ObjectsContext.Provider
+      value={{ call, redo, undo, state, events, setEvents, canRedo, canUndo }}
+    >
       {children}
     </ObjectsContext.Provider>
   );

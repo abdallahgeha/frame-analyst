@@ -8,6 +8,12 @@ export default {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
+      height: {
+        stage: "calc(100vh - 64px)",
+      },
+      width: {
+        stage: "calc(100vw - 240px)",
+      },
     },
   },
   plugins: [],

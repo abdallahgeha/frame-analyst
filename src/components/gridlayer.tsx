@@ -12,7 +12,7 @@ const GridLayer = ({
   const windowSize = useWindowSize();
 
   if (!windowSize.width || !windowSize.height) return null;
-  const CANVAS_WIDTH = windowSize.width;
+  const CANVAS_WIDTH = windowSize.width - 240;
   const CANVAS_HEIGHT = windowSize.height - 60;
 
   if (!isGridOn) return null;

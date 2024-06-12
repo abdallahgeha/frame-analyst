@@ -25,7 +25,7 @@ const CappedLine = ({ line }: { line: LineType }) => {
 
     if (e.target.name() === "capStart") {
       setTempLine({
-        id: "",
+        id: "tempLine",
         points: [
           snapX,
           snapY,
@@ -37,7 +37,7 @@ const CappedLine = ({ line }: { line: LineType }) => {
       });
     } else if (e.target.name() === "capEnd") {
       setTempLine({
-        id: "",
+        id: "tempLine",
         points: [
           line.points[0] ?? snapX,
           line.points[1] ?? snapY,
