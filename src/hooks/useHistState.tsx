@@ -80,6 +80,8 @@ const useHistState = (maxHistory: number) => {
       }
       return newEvents;
     });
+
+    if (undoneEvents.length > 0) setUndoneEvents([]);
   };
 
   const undo = () => {
