@@ -83,29 +83,17 @@ const useHistState = (maxHistory: number) => {
   };
 
   const undo = () => {
-    setEvents((prevEvents) => {
-      if (prevEvents.length === 0) return prevEvents;
-      const newEvents = prevEvents.slice(0, -1);
-      setUndoneEvents((prevUndone) => {
-        const lastEvent = prevEvents[prevEvents.length - 1]!;
-        const newUndone = [...prevUndone, lastEvent];
-        return newUndone;
-      });
-      return newEvents;
-    });
+    if (events.length === 0) return;
+    const lastEvent = events[events.length - 1];
+    setUndoneEvents([...undoneEvents, lastEvent as EventType]);
+    setEvents(events.slice(0, -1));
   };
 
   const redo = () => {
-    setUndoneEvents((prevUndone) => {
-      if (prevUndone.length === 0) return prevUndone;
-      const newUndone = prevUndone.slice(0, -1);
-      setEvents((prevEvents) => {
-        const lastEvent = prevUndone[prevUndone.length - 1]!;
-        const newEvents = [...prevEvents, lastEvent];
-        return newEvents;
-      });
-      return newUndone;
-    });
+    if (undoneEvents.length === 0) return;
+    const lastEvent = undoneEvents[undoneEvents.length - 1];
+    setEvents([...events, lastEvent as EventType]);
+    setUndoneEvents(undoneEvents.slice(0, -1));
   };
 
   const buildState = useCallback(
