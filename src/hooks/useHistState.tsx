@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ObjectsType } from "~/types/shapes.types";
 
 export enum EventActions {
@@ -16,62 +16,44 @@ export type CreateEditEventType = {
   payload: ObjectsType;
 };
 
-export type DeleteClearEventType = {
+export type ClearEventType = {
   id: string;
-  action: EventActions.DELETE | EventActions.CLEAR;
+  action: EventActions.CLEAR;
   payload: null;
 };
 
-export type SetActiveInactiveEventType = {
+export type DeleteSetActiveInactiveEventType = {
   id: string;
-  action: EventActions.SET_ACTIVE | EventActions.SET_INACTIVE;
+  action:
+    | EventActions.SET_ACTIVE
+    | EventActions.SET_INACTIVE
+    | EventActions.DELETE;
   payload: string[];
 };
 
 export type EventType =
   | CreateEditEventType
-  | DeleteClearEventType
-  | SetActiveInactiveEventType;
+  | ClearEventType
+  | DeleteSetActiveInactiveEventType;
 
 const useHistState = (maxHistory: number) => {
-  const [objects, setObjects] = useState<ObjectsType[]>([]);
   const [baseState, setBaseState] = useState<ObjectsType[]>([]);
   const [events, setEvents] = useState<EventType[]>([]);
   const [undoneEvents, setUndoneEvents] = useState<EventType[]>([]);
-
-  const activate = (ids: string[]) => {
-    setObjects((prevObjects) =>
-      prevObjects.map((obj) => ({
-        ...obj,
-        active: ids.includes(obj.id),
-      })),
-    );
-  };
-
-  const inactivate = () => {
-    setObjects((prevObjects) =>
-      prevObjects.map((obj) => ({
-        ...obj,
-        active: false,
-      })),
-    );
-  };
+  const [activeIds, setActiveIds] = useState<string[]>([]);
 
   const call = (event: Omit<EventType, "id">) => {
     if (event.action === EventActions.SET_ACTIVE) {
-      activate(event.payload as string[]);
-      return;
+      return setActiveIds(event.payload as string[]);
     }
     if (event.action === EventActions.SET_INACTIVE) {
-      inactivate();
-      return;
+      return setActiveIds([]);
     }
 
     setEvents((prevEvents) => {
-      const newEvents = [
-        ...prevEvents,
-        { ...event, id: crypto.randomUUID() } as EventType,
-      ];
+      const newEvent = { ...event, id: crypto.randomUUID() };
+      const newEvents = [...prevEvents, newEvent as EventType];
+
       if (newEvents.length > maxHistory) {
         const oldestAction = newEvents.shift() as EventType;
         if (oldestAction) {
@@ -100,29 +82,31 @@ const useHistState = (maxHistory: number) => {
 
   const buildState = useCallback(
     (eventsToBuild: EventType[]): ObjectsType[] => {
-      return eventsToBuild.reduce((acc: ObjectsType[], event: EventType) => {
-        switch (event.action) {
-          case EventActions.CREATE:
-            return [...acc, event.payload as ObjectsType];
-          case EventActions.EDIT:
-            return acc.map((obj) =>
-              obj.id === (event.payload as ObjectsType).id
-                ? (event.payload as ObjectsType)
-                : obj,
-            );
-          case EventActions.CLEAR:
-            return [];
-          case EventActions.DELETE:
-            const activeObjects = objects
-              .filter((obj) => obj.active)
-              .map((obj) => obj.id);
-            return acc.filter((obj) => !activeObjects.includes(obj.id));
-          default:
-            return acc;
-        }
-      }, baseState);
+      return eventsToBuild
+        .reduce((acc: ObjectsType[], event: EventType) => {
+          switch (event.action) {
+            case EventActions.CREATE:
+              return [...acc, event.payload as ObjectsType];
+            case EventActions.EDIT:
+              return acc.map((obj) =>
+                obj.id === (event.payload as ObjectsType).id
+                  ? (event.payload as ObjectsType)
+                  : obj,
+              );
+            case EventActions.CLEAR:
+              return [];
+            case EventActions.DELETE:
+              return acc.filter((obj) => !event.payload.includes(obj.id));
+            default:
+              return acc;
+          }
+        }, baseState)
+        .map((obj) => ({
+          ...obj,
+          active: activeIds.includes(obj.id),
+        }));
     },
-    [baseState, events],
+    [baseState, events, activeIds],
   );
 
   const state = buildState(events);
@@ -134,6 +118,7 @@ const useHistState = (maxHistory: number) => {
     undo,
     redo,
     state,
+    activeIds,
     canUndo: events.length > 0,
     canRedo: undoneEvents.length > 0,
   };

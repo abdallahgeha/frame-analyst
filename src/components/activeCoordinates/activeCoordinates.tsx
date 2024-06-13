@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Group, Rect, Text } from "react-konva";
 import { SettingsContext } from "~/contexts/settingsContext";
 import type { coordinate } from "~/types/shapes.types";
-import toCoordinate from "~/utils/toCoordnate";
+import CoordinateFns from "~/utils/toCoordnate";
 
 const ActiveCoordinates = ({
   activePointEnd,
@@ -12,6 +12,8 @@ const ActiveCoordinates = ({
   type: string;
 }) => {
   const [settings] = useContext(SettingsContext);
+
+  const { toCoordinate } = new CoordinateFns(settings.gridSize);
 
   if (!activePointEnd) return null;
   if (type === "view") return null;
@@ -34,7 +36,7 @@ const ActiveCoordinates = ({
         opacity={0.5}
       />
       <Text
-        text={toCoordinate(activePointEnd, settings.gridSize).x.toFixed(2)}
+        text={toCoordinate(activePointEnd).x.toFixed(2)}
         fontSize={16}
         fill="white"
         align="center"
@@ -44,7 +46,7 @@ const ActiveCoordinates = ({
       />
       <Text
         x={80}
-        text={toCoordinate(activePointEnd, settings.gridSize).y.toFixed(2)}
+        text={toCoordinate(activePointEnd).y.toFixed(2)}
         fontSize={16}
         fill="#FFFFFF"
         align="center"

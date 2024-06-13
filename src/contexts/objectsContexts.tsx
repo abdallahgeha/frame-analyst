@@ -14,6 +14,7 @@ export const ObjectsContext = createContext<{
   redo: () => void;
   state: ObjectsType[];
   events: EventType[];
+  activeIds: string[];
   setEvents: Dispatch<SetStateAction<EventType[]>>;
   canRedo: boolean;
   canUndo: boolean;
@@ -23,6 +24,7 @@ export const ObjectsContext = createContext<{
   redo: () => {},
   state: [],
   events: [],
+  activeIds: [],
   setEvents: () => {},
   canRedo: false,
   canUndo: false,
@@ -33,12 +35,31 @@ export const ObjectsProvider = ({
 }: {
   children: React.ReactElement;
 }): ReactElement => {
-  const { call, redo, undo, state, events, setEvents, canRedo, canUndo } =
-    useHistState(20);
+  const {
+    call,
+    redo,
+    undo,
+    state,
+    events,
+    setEvents,
+    canRedo,
+    canUndo,
+    activeIds,
+  } = useHistState(20);
 
   return (
     <ObjectsContext.Provider
-      value={{ call, redo, undo, state, events, setEvents, canRedo, canUndo }}
+      value={{
+        call,
+        redo,
+        undo,
+        state,
+        events,
+        setEvents,
+        canRedo,
+        canUndo,
+        activeIds,
+      }}
     >
       {children}
     </ObjectsContext.Provider>

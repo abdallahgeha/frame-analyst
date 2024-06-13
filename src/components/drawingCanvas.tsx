@@ -17,7 +17,7 @@ import type {
 } from "~/types/shapes.types";
 import { THROTTLE_DELAY } from "~/constants";
 import CappedLine from "./cappedLine/cappedLine";
-import toCoordinate from "~/utils/toCoordnate";
+import CoordinateFns from "~/utils/toCoordnate";
 import Pin from "./pin/pin";
 import CappedRect from "./cappedRect/cappedRect";
 import ActiveCoordinates from "./activeCoordinates/activeCoordinates";
@@ -47,6 +47,8 @@ const DrawingCanvas = ({
   const [activePointEnd, setActivePointEnd] = useState<coordinate | null>(null);
   const { createLine, createPin, createRect, selectObjects } =
     useCreateObjects();
+
+  const { toCoordinate } = new CoordinateFns(settings.gridSize);
 
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
@@ -99,9 +101,7 @@ const DrawingCanvas = ({
 
     if (!!position && !!stage) {
       const { snapX, snapY } = snap(position);
-      setCurrentPosition(
-        toCoordinate({ x: snapX, y: snapY }, settings.gridSize),
-      );
+      setCurrentPosition(toCoordinate({ x: snapX, y: snapY }));
 
       if (activePointStart) {
         setActivePointEnd({ x: snapX, y: snapY });

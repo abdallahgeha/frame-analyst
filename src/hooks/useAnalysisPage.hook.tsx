@@ -11,7 +11,13 @@ import { EventActions } from "./useHistState";
 
 export const useAnalysisPage = () => {
   const pageRef = useRef<KeyActions>();
-  const { state: objects, call } = useContext(ObjectsContext);
+  const {
+    state: objects,
+    call,
+    activeIds,
+    undo,
+    redo,
+  } = useContext(ObjectsContext);
   const [type, setType] = useContext(TypeContext);
 
   const unselect = () => {
@@ -30,7 +36,7 @@ export const useAnalysisPage = () => {
 
     call({
       action: EventActions.DELETE,
-      payload: null,
+      payload: activeIds,
     });
   };
 
@@ -61,6 +67,14 @@ export const useAnalysisPage = () => {
       setType("rect");
     } else if (event.key === "x") {
       clear();
+    } else if (
+      event.key === "z" &&
+      event.shiftKey &&
+      (event.ctrlKey || event.metaKey)
+    ) {
+      redo();
+    } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
+      undo();
     }
   };
 

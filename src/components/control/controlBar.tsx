@@ -44,10 +44,10 @@ const ControlButton = ({
   buttonType: DrawType;
 }) => {
   const [activeType, setType] = useContext(TypeContext);
-  const { undo, redo, call, canRedo, canUndo } = useContext(ObjectsContext);
+  const { undo, redo, call, canRedo, canUndo, activeIds } = useContext(ObjectsContext);
 
   const deleteSelected = () => {
-    call({ action: EventActions.DELETE, payload: null });
+    call({ action: EventActions.DELETE, payload: activeIds });
   };
 
   const clear = () => {
