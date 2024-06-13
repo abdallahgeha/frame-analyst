@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { ObjectsType } from "~/types/shapes.types";
 
 export enum EventActions {
@@ -123,11 +123,7 @@ const useHistState = (maxHistory: number) => {
     [baseState, events],
   );
 
-  useEffect(() => {
-    setObjects(buildState(events));
-  }, [events, buildState]);
-
-  const state = objects;
+  const state = buildState(events);
 
   return {
     events,
