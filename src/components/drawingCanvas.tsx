@@ -8,7 +8,7 @@ import {
 import { Stage, Layer } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
-import type { KonvaMouse } from "~/types/konvaEvents.types";
+import type { KonvaMouse, KovaWheel } from "~/types/konvaEvents.types";
 import type {
   LineType,
   RectType,
@@ -30,6 +30,7 @@ import useSnap from "~/hooks/useSnap";
 import { SettingsContext } from "~/contexts/settingsContext";
 import useCreateObjects from "~/hooks/useCreateObjects";
 import { useWindowSize } from "~/hooks/useWindowSize";
+import { ScaleContext } from "~/contexts/scaleContext";
 
 const DrawingCanvas = ({
   setCurrentPosition,
@@ -40,6 +41,7 @@ const DrawingCanvas = ({
   const windowSize = useWindowSize();
   const [settings] = useContext(SettingsContext);
   const [type] = useContext(TypeContext);
+  const [scale, setScale] = useContext(ScaleContext);
   const { state: objects } = useContext(ObjectsContext);
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
@@ -100,7 +102,11 @@ const DrawingCanvas = ({
     container.style.cursor = "crosshair";
 
     if (!!position && !!stage) {
-      const { snapX, snapY } = snap(position);
+      let scaledPosition: coordinate = {
+        x: position.x / scale.scale - scale.x / scale.scale,
+        y: position.y / scale.scale - scale.y / scale.scale,
+      };
+      const { snapX, snapY } = snap(scaledPosition);
       setCurrentPosition(toCoordinate({ x: snapX, y: snapY }));
 
       if (activePointStart) {
@@ -110,6 +116,26 @@ const DrawingCanvas = ({
   };
 
   const handleMouseOverThrottled = throttle(handleMouseOver, THROTTLE_DELAY);
+
+  const handleWheel = (e: KovaWheel) => {
+    e.evt.preventDefault();
+
+    const scaleBy = 1.02;
+    const stage = e.target.getStage()!;
+    const oldScale = stage.scaleX();
+    const mousePointTo = {
+      x: stage.getPointerPosition()!.x / oldScale - stage.x() / oldScale,
+      y: stage.getPointerPosition()!.y / oldScale - stage.y() / oldScale,
+    };
+
+    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+    setScale({
+      scale: newScale,
+      x: (stage.getPointerPosition()!.x / newScale - mousePointTo.x) * newScale,
+      y: (stage.getPointerPosition()!.y / newScale - mousePointTo.y) * newScale,
+    });
+  };
 
   useEffect(() => {
     if (type) {
@@ -136,8 +162,16 @@ const DrawingCanvas = ({
       height={windowSize.height - 60}
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}
+      onWheel={handleWheel}
+      scaleX={scale.scale}
+      scaleY={scale.scale}
+      x={scale.x}
+      y={scale.y}
     >
-      <GridLayer gridSize={settings.gridSize} isGridOn={settings.showGrid} />
+      <GridLayer
+        gridSize={settings.gridSize * scale.scale}
+        isGridOn={settings.showGrid}
+      />
       <Layer>
         {newLines.map((line) => (
           <CappedLine key={line.id} line={line} />

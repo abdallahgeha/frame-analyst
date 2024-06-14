@@ -1,5 +1,7 @@
+import { useContext } from "react";
 import { Layer, Line } from "react-konva";
 import { xOffset, yOffset } from "~/constants";
+import { ScaleContext } from "~/contexts/scaleContext";
 import { useWindowSize } from "~/hooks/useWindowSize";
 
 const GridLayer = ({
@@ -10,7 +12,7 @@ const GridLayer = ({
   isGridOn: boolean;
 }) => {
   const windowSize = useWindowSize();
-
+  // const [{ scale }] = useContext(ScaleContext);
   if (!windowSize.width || !windowSize.height) return null;
   const CANVAS_WIDTH = windowSize.width - 240;
   const CANVAS_HEIGHT = windowSize.height - 60;
@@ -20,6 +22,8 @@ const GridLayer = ({
   // Calculate the number of grid squares required based on the canvas size
   const numVerticalLines = Math.ceil(CANVAS_WIDTH / gridSize);
   const numHorizontalLines = Math.ceil(CANVAS_HEIGHT / gridSize);
+
+  console.log("numVerticalLines", numVerticalLines);
 
   // Create an array to store the grid line components
   const verticalLines = [];

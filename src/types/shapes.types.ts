@@ -4,7 +4,6 @@ export type SettingsType = {
   snapToGrid: boolean;
   snapToCap: boolean;
   snapToPin: boolean;
-
   showGrid: boolean;
   showCoordinates: boolean;
 };
@@ -43,3 +42,9 @@ export type pinWithId = {
   itemType: "pin";
 };
 export type ObjectsType = LineType | pinWithId | RectType;
+
+export type ScaleType = {
+  scale: number;
+  x: number;
+  y: number;
+};
