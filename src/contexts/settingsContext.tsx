@@ -11,7 +11,7 @@ export const SettingsContext = createContext<
   [SettingsType, Dispatch<SetStateAction<SettingsType>>]
 >([
   {
-    gridSize: 20,
+    gridSize: 50,
     showGrid: true,
     showCoordinates: true,
     snapToGrid: true,

@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { Group, Rect, Text } from "react-konva";
+import { ScaleContext } from "~/contexts/scaleContext";
 import { SettingsContext } from "~/contexts/settingsContext";
 import type { coordinate } from "~/types/shapes.types";
 import CoordinateFns from "~/utils/toCoordnate";
@@ -12,8 +13,14 @@ const ActiveCoordinates = ({
   type: string;
 }) => {
   const [settings] = useContext(SettingsContext);
+  const [scale] = useContext(ScaleContext);
 
-  const { toCoordinate } = new CoordinateFns(settings.gridSize);
+  const { toCoordinate } = new CoordinateFns(
+    settings.gridSize,
+    scale.x,
+    scale.y,
+    scale.scale,
+  );
 
   if (!activePointEnd) return null;
   if (type === "view") return null;

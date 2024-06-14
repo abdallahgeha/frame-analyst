@@ -1,6 +1,5 @@
 import { useContext } from "react";
 import { Layer, Line } from "react-konva";
-import { xOffset, yOffset } from "~/constants";
 import { ScaleContext } from "~/contexts/scaleContext";
 import { useWindowSize } from "~/hooks/useWindowSize";
 
@@ -12,45 +11,87 @@ const GridLayer = ({
   isGridOn: boolean;
 }) => {
   const windowSize = useWindowSize();
-  // const [{ scale }] = useContext(ScaleContext);
+  const [{ scale, x, y }] = useContext(ScaleContext);
   if (!windowSize.width || !windowSize.height) return null;
-  const CANVAS_WIDTH = windowSize.width - 240;
-  const CANVAS_HEIGHT = windowSize.height - 60;
+  const CANVAS_WIDTH = (windowSize.width - 240) / scale;
+  const CANVAS_HEIGHT = (windowSize.height - 60) / scale;
+  const scaledGridSize = gridSize / scale;
 
   if (!isGridOn) return null;
 
-  // Calculate the number of grid squares required based on the canvas size
-  const numVerticalLines = Math.ceil(CANVAS_WIDTH / gridSize);
-  const numHorizontalLines = Math.ceil(CANVAS_HEIGHT / gridSize);
-
-  console.log("numVerticalLines", numVerticalLines);
+  const numPositiveVerticalLines = CANVAS_WIDTH - x;
+  const numNegativeVerticalLines = x;
+  const numPositiveHorizontalLines = CANVAS_HEIGHT - y;
+  const numNegativeHorizontalLines = y;
 
   // Create an array to store the grid line components
   const verticalLines = [];
   const horizontalLines = [];
 
-  // Create vertical grid lines
-  for (let i = 1; i < numVerticalLines; i++) {
+  for (let i = 1; i < numPositiveVerticalLines; i++) {
     verticalLines.push(
       <Line
-        key={`vertical_${i}`}
-        points={[i * gridSize, 0, i * gridSize, CANVAS_HEIGHT]}
-        stroke={i == xOffset ? "red" : "darkgray"}
-        strokeWidth={i == xOffset ? 1 : 0.5}
-        opacity={i == xOffset ? 0.8 : 0.5}
+        key={`vertical_p_${i}`}
+        points={[
+          i * scaledGridSize,
+          -y / scale,
+          i * scaledGridSize,
+          (CANVAS_HEIGHT + y) / scale,
+        ]}
+        stroke={"darkgray"}
+        strokeWidth={0.5}
+        opacity={0.5}
       />,
     );
   }
 
-  // Create horizontal grid lines
-  for (let i = 1; i < numHorizontalLines; i++) {
+  for (let i = 1; i < numNegativeVerticalLines; i++) {
+    verticalLines.push(
+      <Line
+        key={`vertical_n_${i}`}
+        points={[
+          0 - i * scaledGridSize,
+          -y / scale,
+          0 - i * scaledGridSize,
+          (CANVAS_HEIGHT + y) / scale,
+        ]}
+        stroke={"darkgray"}
+        strokeWidth={0.5}
+        opacity={0.5}
+      />,
+    );
+  }
+
+  for (let i = 1; i < numPositiveHorizontalLines; i++) {
     horizontalLines.push(
       <Line
-        key={`horizontal_${i}`}
-        points={[0, i * gridSize, CANVAS_WIDTH, i * gridSize]}
-        stroke={i == yOffset ? "green" : "darkgray"}
-        strokeWidth={i == yOffset ? 1 : 0.5}
-        opacity={i == yOffset ? 0.8 : 0.5}
+        key={`horizontal_p_${i}`}
+        points={[
+          -x / scale,
+          +i * scaledGridSize,
+          (CANVAS_WIDTH - x) / scale,
+          +i * scaledGridSize,
+        ]}
+        stroke={"darkgray"}
+        strokeWidth={0.5}
+        opacity={0.5}
+      />,
+    );
+  }
+
+  for (let i = 1; i < numNegativeHorizontalLines; i++) {
+    horizontalLines.push(
+      <Line
+        key={`horizontal_n_${i}`}
+        points={[
+          -x / scale,
+          -i * scaledGridSize,
+          (CANVAS_WIDTH - x) / scale,
+          -i * scaledGridSize,
+        ]}
+        stroke={"darkgray"}
+        strokeWidth={0.5}
+        opacity={0.5}
       />,
     );
   }
@@ -59,25 +100,27 @@ const GridLayer = ({
     <Layer>
       {verticalLines}
       {horizontalLines}
+      <Line points={[0, 0, 0, -60 / scale]} stroke="red" strokeWidth={3} />
       <Line
         points={[
-          xOffset * gridSize,
-          yOffset * gridSize,
-          xOffset * gridSize,
-          (yOffset - 3) * gridSize,
+          0,
+          (CANVAS_HEIGHT + 2 * y) / scale,
+          0,
+          -(CANVAS_HEIGHT + 2 * y) / scale,
         ]}
         stroke="red"
-        strokeWidth={3}
+        strokeWidth={1}
       />
+      <Line points={[0, 0, 60 / scale, 0]} stroke="green" strokeWidth={3} />
       <Line
         points={[
-          xOffset * gridSize,
-          yOffset * gridSize,
-          (xOffset + 3) * gridSize,
-          yOffset * gridSize,
+          (2 * x + CANVAS_WIDTH) / scale,
+          0,
+          -((2 * x + CANVAS_WIDTH) / scale),
+          0,
         ]}
         stroke="green"
-        strokeWidth={3}
+        strokeWidth={1}
       />
     </Layer>
   );

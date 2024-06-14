@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { ObjectsContext } from "~/contexts/objectsContexts";
+import { ScaleContext } from "~/contexts/scaleContext";
 import { SettingsContext } from "~/contexts/settingsContext";
 import { CreateEditEventType, EventType } from "~/hooks/useHistState";
 import { ObjectsType } from "~/types/shapes.types";
@@ -7,13 +8,15 @@ import CoordinateFns from "~/utils/toCoordnate";
 
 const PointForm = ({ entry }: { entry: EventType }) => {
   const [settings] = useContext(SettingsContext);
+  const [scale] = useContext(ScaleContext);
+
   const { setEvents } = useContext(ObjectsContext);
 
   if (!entry.payload) return null;
   if (Array.isArray(entry.payload)) return null;
 
   const { toCoordinateX, toCoordinateY, toGridCoordinateX, toGridCoordinateY } =
-    new CoordinateFns(settings.gridSize);
+    new CoordinateFns(settings.gridSize, scale.x, scale.y, scale.scale);
 
   const handeChangeEvent = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -60,7 +63,7 @@ const PointForm = ({ entry }: { entry: EventType }) => {
         onChange={(e) => handeChangeEvent(e, 1)}
       />
 
-      {entry.payload.points[2] && entry.payload.points[3] && (
+      {entry.payload.points[2] != null && entry.payload.points[3] != null && (
         <>
           <div>2</div>
           <input
@@ -74,7 +77,7 @@ const PointForm = ({ entry }: { entry: EventType }) => {
             type="number"
             name="y_2"
             className="col-span-4 border text-center"
-            value={toCoordinateX(entry.payload.points[3]).toFixed(2)}
+            value={toCoordinateY(entry.payload.points[3]).toFixed(2)}
             onChange={(e) => handeChangeEvent(e, 3)}
           />
         </>

@@ -25,8 +25,8 @@ export const ScaleProvider = ({
 }): ReactElement => {
   const [scale, setScale] = useState({
     scale: 1,
-    x: 0,
-    y: 0,
+    x: 120,
+    y: 680,
   });
 
   return (

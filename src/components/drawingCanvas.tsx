@@ -50,7 +50,12 @@ const DrawingCanvas = ({
   const { createLine, createPin, createRect, selectObjects } =
     useCreateObjects();
 
-  const { toCoordinate } = new CoordinateFns(settings.gridSize);
+  const { toCoordinate } = new CoordinateFns(
+    settings.gridSize,
+    scale.x,
+    scale.y,
+    scale.scale,
+  );
 
   const handleClick = (e: KonvaMouse) => {
     const stage = e.target.getStage();
@@ -120,7 +125,7 @@ const DrawingCanvas = ({
   const handleWheel = (e: KovaWheel) => {
     e.evt.preventDefault();
 
-    const scaleBy = 1.02;
+    const scaleBy = 1.06;
     const stage = e.target.getStage()!;
     const oldScale = stage.scaleX();
     const mousePointTo = {
