@@ -8,7 +8,11 @@ import {
 import { Stage, Layer } from "react-konva";
 import GridLayer from "./gridlayer";
 import throttle from "~/utils/throttle";
-import type { KonvaMouse, KovaWheel } from "~/types/konvaEvents.types";
+import type {
+  KonvaDrag,
+  KonvaMouse,
+  KovaWheel,
+} from "~/types/konvaEvents.types";
 import type {
   LineType,
   RectType,
@@ -43,6 +47,7 @@ const DrawingCanvas = ({
   const [type] = useContext(TypeContext);
   const [scale, setScale] = useContext(ScaleContext);
   const { state: objects } = useContext(ObjectsContext);
+  const [isDrag, setIsDrag] = useState(false);
   const [activePointStart, setActivePointStart] = useState<coordinate | null>(
     null,
   );
@@ -58,6 +63,7 @@ const DrawingCanvas = ({
   );
 
   const handleClick = (e: KonvaMouse) => {
+    if (e.evt.button !== 0 || isDrag) return;
     const stage = e.target.getStage();
     let clickLocation = stage!.getRelativePointerPosition()!;
 
@@ -123,24 +129,71 @@ const DrawingCanvas = ({
   const handleMouseOverThrottled = throttle(handleMouseOver, THROTTLE_DELAY);
 
   const handleWheel = (e: KovaWheel) => {
+    // if (e.evt.button === 0) return;
     e.evt.preventDefault();
-
     const scaleBy = 1.06;
+
     const stage = e.target.getStage()!;
     const oldScale = stage.scaleX();
+
+    let newScale = oldScale;
+    let newX = stage.x();
+    let newY = stage.y();
+
     const mousePointTo = {
       x: stage.getPointerPosition()!.x / oldScale - stage.x() / oldScale,
       y: stage.getPointerPosition()!.y / oldScale - stage.y() / oldScale,
     };
 
-    const newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+    if (e.evt.ctrlKey || e.evt.metaKey) {
+      newScale = e.evt.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
+      newX =
+        (stage.getPointerPosition()!.x / newScale - mousePointTo.x) * newScale;
+      newY =
+        (stage.getPointerPosition()!.y / newScale - mousePointTo.y) * newScale;
+    } else {
+      newX = stage.x() - e.evt.deltaX;
+      newY = stage.y() - e.evt.deltaY;
+    }
 
     setScale({
       scale: newScale,
-      x: (stage.getPointerPosition()!.x / newScale - mousePointTo.x) * newScale,
-      y: (stage.getPointerPosition()!.y / newScale - mousePointTo.y) * newScale,
+      x: newX,
+      y: newY,
     });
   };
+
+  const handleThrottledWheel = throttle(handleWheel, 100);
+
+  // const handleDragStart = (e: KonvaMouse) => {
+  //   if (e.evt.button === 0) return;
+  //   setIsDrag(true);
+  //   const container = e.target.getStage()!.container();
+  //   container.style.cursor = "grabbing";
+  // };
+
+  // const handleDrag = (e: KonvaDrag) => {
+  //   const stage = e.target.getStage()!;
+  //   const oldScale = stage.scaleX();
+
+  //   const newX = stage.x() + e.evt.movementX / oldScale;
+  //   const newY = stage.y() + e.evt.movementY / oldScale;
+
+  //   setScale({
+  //     scale: scale.scale,
+  //     x: newX,
+  //     y: newY,
+  //   });
+  // };
+
+  // const handleDragThrottled = throttle(handleDrag, 500);
+
+  // const handleDragEnd = (e: KonvaMouse) => {
+  //   if (e.evt.button === 0) return;
+  //   setIsDrag(false);
+  //   const container = e.target.getStage()!.container();
+  //   container.style.cursor = "default";
+  // };
 
   useEffect(() => {
     if (type) {
@@ -167,9 +220,13 @@ const DrawingCanvas = ({
       height={windowSize.height - 60}
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}
-      onWheel={handleWheel}
+      onWheel={handleThrottledWheel}
+      // onDragStart={handleDragStart}
+      // onDragEnd={handleDragEnd}
+      // onDragMove={handleDragThrottled}
       scaleX={scale.scale}
       scaleY={scale.scale}
+      // draggable={isDrag}
       x={scale.x}
       y={scale.y}
     >

@@ -36,7 +36,7 @@ const GridLayer = ({
           i * scaledGridSize,
           -y / scale,
           i * scaledGridSize,
-          (CANVAS_HEIGHT + y) / scale,
+          CANVAS_HEIGHT + -y / scale,
         ]}
         stroke={"darkgray"}
         strokeWidth={0.5}
@@ -50,10 +50,10 @@ const GridLayer = ({
       <Line
         key={`vertical_n_${i}`}
         points={[
-          0 - i * scaledGridSize,
+          -i * scaledGridSize,
           -y / scale,
-          0 - i * scaledGridSize,
-          (CANVAS_HEIGHT + y) / scale,
+          -i * scaledGridSize,
+          CANVAS_HEIGHT - y / scale,
         ]}
         stroke={"darkgray"}
         strokeWidth={0.5}
@@ -69,7 +69,7 @@ const GridLayer = ({
         points={[
           -x / scale,
           +i * scaledGridSize,
-          (CANVAS_WIDTH - x) / scale,
+          CANVAS_WIDTH - x / scale,
           +i * scaledGridSize,
         ]}
         stroke={"darkgray"}
@@ -86,7 +86,7 @@ const GridLayer = ({
         points={[
           -x / scale,
           -i * scaledGridSize,
-          (CANVAS_WIDTH - x) / scale,
+          CANVAS_WIDTH - x / scale,
           -i * scaledGridSize,
         ]}
         stroke={"darkgray"}
@@ -102,23 +102,13 @@ const GridLayer = ({
       {horizontalLines}
       <Line points={[0, 0, 0, -60 / scale]} stroke="red" strokeWidth={3} />
       <Line
-        points={[
-          0,
-          (CANVAS_HEIGHT + 2 * y) / scale,
-          0,
-          -(CANVAS_HEIGHT + 2 * y) / scale,
-        ]}
+        points={[0, -y / scale, 0, CANVAS_HEIGHT - y / scale]}
         stroke="red"
         strokeWidth={1}
       />
       <Line points={[0, 0, 60 / scale, 0]} stroke="green" strokeWidth={3} />
       <Line
-        points={[
-          (2 * x + CANVAS_WIDTH) / scale,
-          0,
-          -((2 * x + CANVAS_WIDTH) / scale),
-          0,
-        ]}
+        points={[-x / scale, 0, CANVAS_WIDTH - x / scale, 0]}
         stroke="green"
         strokeWidth={1}
       />
