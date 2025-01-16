@@ -129,7 +129,6 @@ const DrawingCanvas = ({
   const handleMouseOverThrottled = throttle(handleMouseOver, THROTTLE_DELAY);
 
   const handleWheel = (e: KovaWheel) => {
-    // if (e.evt.button === 0) return;
     e.evt.preventDefault();
     const scaleBy = 1.06;
 
@@ -165,36 +164,6 @@ const DrawingCanvas = ({
 
   const handleThrottledWheel = throttle(handleWheel, 100);
 
-  // const handleDragStart = (e: KonvaMouse) => {
-  //   if (e.evt.button === 0) return;
-  //   setIsDrag(true);
-  //   const container = e.target.getStage()!.container();
-  //   container.style.cursor = "grabbing";
-  // };
-
-  // const handleDrag = (e: KonvaDrag) => {
-  //   const stage = e.target.getStage()!;
-  //   const oldScale = stage.scaleX();
-
-  //   const newX = stage.x() + e.evt.movementX / oldScale;
-  //   const newY = stage.y() + e.evt.movementY / oldScale;
-
-  //   setScale({
-  //     scale: scale.scale,
-  //     x: newX,
-  //     y: newY,
-  //   });
-  // };
-
-  // const handleDragThrottled = throttle(handleDrag, 500);
-
-  // const handleDragEnd = (e: KonvaMouse) => {
-  //   if (e.evt.button === 0) return;
-  //   setIsDrag(false);
-  //   const container = e.target.getStage()!.container();
-  //   container.style.cursor = "default";
-  // };
-
   useEffect(() => {
     if (type) {
       selectObjects({ x: 0, y: 0 }, { x: 0, y: 0 });
@@ -221,12 +190,8 @@ const DrawingCanvas = ({
       onClick={handleClick}
       onPointerMove={handleMouseOverThrottled}
       onWheel={handleThrottledWheel}
-      // onDragStart={handleDragStart}
-      // onDragEnd={handleDragEnd}
-      // onDragMove={handleDragThrottled}
       scaleX={scale.scale}
       scaleY={scale.scale}
-      // draggable={isDrag}
       x={scale.x}
       y={scale.y}
     >
